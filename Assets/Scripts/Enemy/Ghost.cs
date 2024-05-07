@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Ghost : MonoBehaviour
 {
@@ -30,10 +31,16 @@ public class Ghost : MonoBehaviour
     private CapsuleCollider CapCollider;
 
     //受到了几次伤害
-    private int hitDamage = 0;
+    private float hitDamage = 0;
     //总血量
-    public int maxBlood = 10;
+    public float maxBlood = 10;
     private bool isDie = false;
+    //血条对象
+    public GameObject enemyHealthObj;
+    //血条头像
+    public Image enemyAvatar;
+    //血条
+    public Image bloodBar;
 
     private bool isWalk = false;
     public float moveSpeed = 3;
@@ -66,7 +73,10 @@ public class Ghost : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(isDie)
+        //血条改变
+        bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
+
+        if (isDie)
         {
             //已死亡
         }
@@ -198,6 +208,8 @@ public class Ghost : MonoBehaviour
         CapCollider.enabled = false;
         stopHit();
         stopUpHit();
+        //隐藏血条对象
+        enemyHealthObj.SetActive(false);
         //敌人静止
         rigi.velocity = new Vector3(0, 0, 0);
         //敌人摆正
@@ -379,7 +391,7 @@ public class Ghost : MonoBehaviour
     {
         if (isChange)
         {
-            ++hitDamage;
+            changeHitDamage();
             //Debug.Log("受到伤害" + hitDamage);
             ObjectPool.Instance.Get(hitObj, hitPoint.transform.position, Vector3.zero, true).GetComponent<Hit>()
             .setFollowTransform(transform)
@@ -390,7 +402,7 @@ public class Ghost : MonoBehaviour
     //受击特效2 （踢飞特效）
     private void hit2Style()
     {
-        ++hitDamage;
+        changeHitDamage();
         //Debug.Log("受到伤害" + hitDamage);
         ObjectPool.Instance.Get(hit2Obj, hitPoint.transform.position, Vector3.zero, true).GetComponent<Hit2>()
             .setFollowTransform(transform)
@@ -430,6 +442,17 @@ public class Ghost : MonoBehaviour
         }
     }
 
+    //扣减血量
+    private void changeHitDamage(float blood = 1)
+    {
+        //扣血
+        hitDamage += blood;
+        //显示血条对象
+        enemyHealthObj.SetActive(true);
+        //修改头像显示
+        enemyAvatar.sprite = Resources.Load<Sprite>("Images/Enemy/Ghost/enemyAvatar") as Sprite;
+    }
+
     private void stopHit()
     {
         if(isHit)
@@ -447,7 +470,7 @@ public class Ghost : MonoBehaviour
     {
         if(isHitToGround)
         {
-            ++hitDamage;
+            changeHitDamage(2);
             Debug.Log("砸地上，受到伤害" + hitDamage);
             playAudio("Audios/Tool/hitToGround");
         }
