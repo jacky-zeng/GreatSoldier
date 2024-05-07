@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -55,10 +56,12 @@ public class Player : MonoBehaviour
 
     //收到伤害
     //受到了几次伤害
-    private int hitDamage = 0;
+    private float hitDamage = 0;
     //总血量
-    public int maxBlood = 10;
+    public float maxBlood = 10;
     private bool isHit = false;
+    //血条
+    public Image bloodBar;
 
     //相机
     private Transform transformCamera;
@@ -124,24 +127,34 @@ public class Player : MonoBehaviour
         }
     }
 
-
     // Update is called once per frame
     void Update()
     {
-        if (!isEnd)
-        {
-            if (isUnmatched)
-            {
-                unmatchedSecond -= Time.deltaTime;
-                if (unmatchedSecond <= 0)
-                {
-                    Log("无敌已过" + Time.deltaTime);
-                    isUnmatched = false;
-                }
-            }
+        //血条改变
+        bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
 
-            if (!isDie)
+        if (isDie)
+        {
+            //已死亡 todo 结束游戏界面
+        }
+        else if (hitDamage >= maxBlood) //死亡
+        {
+            die();
+        }
+        else
+        {
+            if (!isEnd)
             {
+                if (isUnmatched)
+                {
+                    unmatchedSecond -= Time.deltaTime;
+                    if (unmatchedSecond <= 0)
+                    {
+                        Log("无敌已过" + Time.deltaTime);
+                        isUnmatched = false;
+                    }
+                }
+
                 action();
             }
         }
@@ -558,6 +571,11 @@ public class Player : MonoBehaviour
         //rigi.velocity = new Vector3(0, 0, 0);
         ////摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    private void die()
+    {
+        isDie = true;
     }
 
     public void playAudio(string fileName)
