@@ -874,7 +874,7 @@ MonoBehaviour:
   hitPoint: {fileID: 1210417458}
   hitObj: {fileID: 8548565203535995427, guid: aa108664f422948d4934c71936044fda, type: 3}
   hit2Obj: {fileID: 8767210755610089165, guid: 6073cf4e2cc574b3984c016f7174a454, type: 3}
-  maxBlood: 30
+  maxBlood: 10
   moveSpeed: 3
   JumpHitForce: 260
   upPosSpeed: 3

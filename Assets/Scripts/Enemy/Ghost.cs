@@ -30,8 +30,10 @@ public class Ghost : MonoBehaviour
 
     //受到了几次伤害
     private int hitDamage = 0;
+    //总血量
+    public int maxBlood = 10;
+    private bool isDie = false;
 
-    public int maxBlood = 30;
     private bool isWalk = false;
     public float moveSpeed = 3;
 
@@ -63,25 +65,29 @@ public class Ghost : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(isHit)
+        if(isDie)
         {
-            byHit();
-        } else if(isUpHit)
-        {
-            byUpHit();
+            //已死亡
         }
-        else if(!isHitOnGround && !isJumpHit)
+        else if (hitDamage >= maxBlood) //死亡
         {
-            walk();
+            die();
         }
-
-        //if (!isAttack && maxBlood > 0)
-        //{
-            
-        //    isAttack = true;
-
-        //    attack();
-        //}
+        else
+        {
+            if (isHit)
+            {
+                byHit();
+            }
+            else if (isUpHit)
+            {
+                byUpHit();
+            }
+            else if (!isHitOnGround && !isJumpHit)
+            {
+                walk();
+            }
+        }
     }
     #endregion
 
@@ -182,6 +188,27 @@ public class Ghost : MonoBehaviour
         }
     }
     #endregion
+
+    private void die()
+    {
+        isDie = true;
+        rigi.isKinematic = true;
+        CapCollider.enabled = false;
+        stopHit();
+        stopUpHit();
+        //敌人静止
+        rigi.velocity = new Vector3(0, 0, 0);
+        //敌人摆正
+        transform.rotation = Quaternion.Euler(0, 0, 0);
+        animator.SetTrigger("triggerDie");
+    }
+
+    //死亡动画事件
+    private void animatorDieEvent()
+    {
+        animator.enabled = false;
+        Destroy(gameObject, 0.5f);
+    }
 
     private void walk()
     {
@@ -472,7 +499,7 @@ public class Ghost : MonoBehaviour
         {
             namePath = "Audios/Enemy/" + fileName;
         }
-        Debug.Log(namePath);
+
         AudioClip clip = Resources.Load<AudioClip>(namePath);
 
         audioSource.clip = clip;
