@@ -390,7 +390,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &949893136
 Transform:
   m_ObjectHideFlags: 0
@@ -423,7 +423,7 @@ CapsuleCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 1.0017377
   m_Height: 5.714306
@@ -598,6 +598,59 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 24.12782, y: 11.535754, z: 1}
   m_Center: {x: 1.8116035, y: 3.4150577, z: 0}
+--- !u!1 &1276511317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1276511318}
+  - component: {fileID: 1276511319}
+  m_Layer: 11
+  m_Name: EnemyAttack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1276511318
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276511317}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1662148278}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1276511319
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276511317}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.1, y: 0.1, z: 0.1}
+  m_Center: {x: 0, y: 0.1930058, z: 0}
 --- !u!1 &1343413643
 GameObject:
   m_ObjectHideFlags: 0
@@ -759,6 +812,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1276511318}
   - {fileID: 1210417459}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -874,7 +928,8 @@ MonoBehaviour:
   hitPoint: {fileID: 1210417458}
   hitObj: {fileID: 8548565203535995427, guid: aa108664f422948d4934c71936044fda, type: 3}
   hit2Obj: {fileID: 8767210755610089165, guid: 6073cf4e2cc574b3984c016f7174a454, type: 3}
-  maxBlood: 10
+  emenyAttackObj: {fileID: 1276511317}
+  maxBlood: 20
   moveSpeed: 3
   JumpHitForce: 260
   upPosSpeed: 3
@@ -1253,6 +1308,7 @@ GameObject:
   - component: {fileID: 2071457768}
   - component: {fileID: 2071457769}
   - component: {fileID: 2071457770}
+  - component: {fileID: 2071457771}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -1369,6 +1425,7 @@ MonoBehaviour:
   attackObj: {fileID: 2014104754}
   jumpAttackObj: {fileID: 1343413643}
   jumpForce: 18
+  maxBlood: 10
 --- !u!54 &2071457770
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1396,6 +1453,29 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!136 &2071457771
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071457762}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.0017377
+  m_Height: 5.714306
+  m_Direction: 1
+  m_Center: {x: 0.3473568, y: -0.13910961, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

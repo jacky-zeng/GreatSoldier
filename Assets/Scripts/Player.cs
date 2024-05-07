@@ -13,6 +13,8 @@ public class Player : MonoBehaviour
     private bool isOnGround = false;
     public float timeRate = 0.3f;
 
+    private AudioSource audioSource;
+
     //相机移动方向 -1向左 0静止 1向右
     private int cameraDirectionMove = 0;
 
@@ -51,6 +53,13 @@ public class Player : MonoBehaviour
     private bool isJumpAttack = false;
     public float jumpForce = 18f;
 
+    //收到伤害
+    //受到了几次伤害
+    private int hitDamage = 0;
+    //总血量
+    public int maxBlood = 10;
+    private bool isHit = false;
+
     //相机
     private Transform transformCamera;
     private float transformCameraY;
@@ -64,7 +73,7 @@ public class Player : MonoBehaviour
         PlayerPrefs.SetString("triggerGun", "");
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
-
+        audioSource = GetComponent<AudioSource>();
         rigiBody = GetComponent<Rigidbody>();
 
         transformCamera = Camera.main.transform;
@@ -516,9 +525,58 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnterOrStay(Collider collision, string type)
     {
-  
+        if (collision.gameObject.name == "EnemyAttack") //收到敌人攻击
+        {
+            Log("hitDamage="+ hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
+            hit(collision.transform.parent.position.x > transform.position.x ? true : false);
+        }
     }
+
     #endregion
+
+    //受到普通伤害
+    public void hit(bool directionHit)
+    {
+        //hit2Style();
+
+        if (!isHit)
+        {
+            isHit = true;
+            ++hitDamage;
+            playAudio("Audios/Tool/manHit1");
+            rigiBody.AddForce(new Vector3(directionHit ? -10 : 10, 0, 0), ForceMode.Impulse);
+            animator.SetTrigger("triggerHit");
+        }
+    }
+
+    //hit动画事件 受击结束后
+    private void animatorHitEndEvent()
+    {
+        isHit = false;
+  
+        ////静止
+        //rigi.velocity = new Vector3(0, 0, 0);
+        ////摆正
+        //transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    public void playAudio(string fileName)
+    {
+        string namePath = "";
+        if (fileName.StartsWith("Audios/"))
+        {
+            namePath = fileName;
+        }
+        else
+        {
+            namePath = "Audios/Player/" + fileName;
+        }
+
+        AudioClip clip = Resources.Load<AudioClip>(namePath);
+
+        audioSource.clip = clip;
+        audioSource.Play();
+    }
 
     #region 日志
     private void Log(string str, bool isMustLog = false)

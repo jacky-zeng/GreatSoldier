@@ -13,6 +13,7 @@ public class Ghost : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     public GameObject hitObj;
     public GameObject hit2Obj;
+    public GameObject emenyAttackObj;
     private float hitDuringTime = 0;
     private float hitMaxDuringTime = 0.6f;
 
@@ -122,7 +123,7 @@ public class Ghost : MonoBehaviour
 
     private void OnTriggerEnterOrStay(Collider other, string type)
     {
-        Debug.Log("EnterOrStay!!!" + other.gameObject.name + "isJumpHit = " + isJumpHit);
+        //Debug.Log("EnterOrStay!!!" + other.gameObject.name + "isJumpHit = " + isJumpHit);
         if (other.gameObject.name == "Attack")
         {
             AnimatorStateInfo tempAnimatorClipName = player.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0);
@@ -178,16 +179,17 @@ public class Ghost : MonoBehaviour
         }
     }
 
+    #endregion
+
     //防止特殊情况未执行 animatorHitStandUpEvent， 延时强制改变状态
     private void cancelStatus()
     {
-        if(isJumpHit || isHitOnGround)
+        if (isJumpHit || isHitOnGround)
         {
             Debug.Log("******cancelJumpHit isJumpHit=" + isJumpHit);
             animatorHitStandUpEvent();
         }
     }
-    #endregion
 
     private void die()
     {
@@ -249,14 +251,21 @@ public class Ghost : MonoBehaviour
             //停止移动
             stopWalk();
             //开始攻击
-            if (!isAttack)
-            {
-                isJumpHit = false;
-                isHitOnGround = false;
-                isAttack = true;
-                animator.SetBool("isAttack", true);
-            }
-           
+            attack();
+        }
+    }
+
+    private void attack()
+    {
+        //开始攻击
+        if (!isAttack)
+        {
+            //使攻击的朝向和主体保持一致
+            emenyAttackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
+            isJumpHit = false;
+            isHitOnGround = false;
+            isAttack = true;
+            animator.SetBool("isAttack", true);
         }
     }
 
@@ -331,30 +340,6 @@ public class Ghost : MonoBehaviour
         animator.SetTrigger("triggerJumpHit");
         rigi.AddForce(new Vector3(direction.x > 0 ? JumpHitForce : -JumpHitForce, 0, 0), ForceMode.Impulse);
         hit2Style();
-    }
-
-    //hitStandUp动画事件 从地面爬起后
-    public void animatorHitStandUpFirstEvent()
-    {
-        ////敌人碰撞体与地面平行
-        //CapCollider.direction = 0;
-        //CapCollider.center = new Vector3(0, -2, 0);
-        //敌人静止
-        rigi.velocity = new Vector3(0, 0, 0);
-        //敌人摆正
-        transform.rotation = Quaternion.Euler(0, 0, 0);
-    }
-
-    //hitStandUp动画事件 从地面爬起后
-    public void animatorHitStandUpEvent()
-    {
-        ////敌人碰撞体与地面垂直
-        //CapCollider.direction = 1;
-        //CapCollider.center = new Vector3(0, 0, 0);
-        //transform.rotation = Quaternion.Euler(0, 0, 0);
-        isJumpHit = false;
-        isHitOnGround = false;
-        Debug.Log("***爬起动画结束 isJumpHit=" + isJumpHit);
     }
 
     //受到普通伤害
@@ -473,6 +458,30 @@ public class Ghost : MonoBehaviour
         }
     }
     #endregion
+
+    //hitStandUp动画事件 从地面爬起后
+    public void animatorHitStandUpFirstEvent()
+    {
+        ////敌人碰撞体与地面平行
+        //CapCollider.direction = 0;
+        //CapCollider.center = new Vector3(0, -2, 0);
+        //敌人静止
+        rigi.velocity = new Vector3(0, 0, 0);
+        //敌人摆正
+        transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    //hitStandUp动画事件 从地面爬起后
+    public void animatorHitStandUpEvent()
+    {
+        ////敌人碰撞体与地面垂直
+        //CapCollider.direction = 1;
+        //CapCollider.center = new Vector3(0, 0, 0);
+        //transform.rotation = Quaternion.Euler(0, 0, 0);
+        isJumpHit = false;
+        isHitOnGround = false;
+        Debug.Log("***爬起动画结束 isJumpHit=" + isJumpHit);
+    }
 
     private void stopAttack()
     {
