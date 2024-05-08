@@ -60,6 +60,7 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/2022.3.13f1c1/Unity.app/Contents/Tools/Unity.SourceGenerators/Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Scripts/Enemy/BaseEnemy.cs" />
     <Compile Include="Assets/Scripts/Tool/Hit.cs" />
     <Compile Include="Assets/Scripts/ObjectPool.cs" />
     <Compile Include="Assets/Scripts/Enemy/Ghost.cs" />
