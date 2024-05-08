@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Ghost : MonoBehaviour
+public class Kun : MonoBehaviour
 {
     #region 变量定义
     private Animator animator;
@@ -237,7 +237,7 @@ public class Ghost : MonoBehaviour
 
         Vector3 distance = targetPosition - currentPosition;
 
-        if (Mathf.Abs(distance.x) >= 2.7f || Mathf.Abs(distance.y) > 1.5f || Mathf.Abs(distance.z) > 2f)
+        if (Mathf.Abs(distance.x) >= 5.4f || Mathf.Abs(distance.y) > 3f || Mathf.Abs(distance.z) > 2f)
         {
             if(!isWalk)
             {
@@ -433,11 +433,11 @@ public class Ghost : MonoBehaviour
             if(direction.x > 0)
             {
                 spriteRenderer.flipX = true;
-                transform.position = player.transform.position + new Vector3(2.5f, 1.5f, 0);
+                transform.position = player.transform.position + new Vector3(5f, 3f, 0);
             } else
             {
                 spriteRenderer.flipX = false;
-                transform.position = player.transform.position + new Vector3(-2.5f, 1.5f, 0);
+                transform.position = player.transform.position + new Vector3(-5f, 3f, 0);
             }
                 
             animator.SetBool("isUpHit", true);
@@ -455,7 +455,7 @@ public class Ghost : MonoBehaviour
         //显示当前敌人血条
         bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
         //修改头像显示
-        enemyAvatar.sprite = Resources.Load<Sprite>("Images/Enemy/Ghost/enemyAvatar") as Sprite;  
+        enemyAvatar.sprite = Resources.Load<Sprite>("Images/Enemy/Kun/enemyAvatar") as Sprite;
     }
 
     private void stopHit()

@@ -65,6 +65,7 @@
     <Compile Include="Assets/Scripts/Enemy/Ghost.cs" />
     <Compile Include="Assets/Scripts/Tool/Hit2.cs" />
     <Compile Include="Assets/Scripts/Player.cs" />
+    <Compile Include="Assets/Scripts/Enemy/Kun.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
