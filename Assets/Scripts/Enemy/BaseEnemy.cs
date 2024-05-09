@@ -29,6 +29,9 @@ public class BaseEnemy : MonoBehaviour
     public float maxBlood = 10;
 
     [HideInInspector]
+    public Sprite enemyAvatarSprite;
+
+    [HideInInspector]
     public Animator animator;
     [HideInInspector]
     public Rigidbody rigi;
@@ -61,6 +64,8 @@ public class BaseEnemy : MonoBehaviour
     public bool isWalk = false;
     [HideInInspector]
     public bool isAttack = false;
+    [HideInInspector]
+    public bool isAttackHeavy = false;
     [HideInInspector]
     public bool isHit = false;           //是否收到普通伤害
     [HideInInspector]
@@ -355,7 +360,7 @@ public class BaseEnemy : MonoBehaviour
         //显示当前敌人血条
         bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
         //修改头像显示
-        enemyAvatar.sprite = Resources.Load<Sprite>("Images/Enemy/Ghost/enemyAvatar") as Sprite;  
+        enemyAvatar.sprite = enemyAvatarSprite;  
     }
 
     public void stopHit()
@@ -415,6 +420,12 @@ public class BaseEnemy : MonoBehaviour
     {
         isAttack = false;
         animator.SetBool("isAttack", false);
+    }
+
+    public void stopAttackHeavy()
+    {
+        isAttackHeavy = false;
+        animator.SetBool("isAttackHeavy", false);
     }
 
     public void stopWalk()

@@ -60,6 +60,7 @@ public class Player : MonoBehaviour
     //总血量
     public float maxBlood = 10;
     private bool isHit = false;
+    private bool isHitHeavy = false;
     //血条
     public Image bloodBar;
 
@@ -193,7 +194,7 @@ public class Player : MonoBehaviour
 
         bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0);
 
-        if (isOnGround == true) //在地面上
+        if (isOnGround == true && isHitHeavy == false) //在地面上
         {
             if (Input.GetKeyDown(KeyCode.Space))   //跳跃
             {
@@ -540,8 +541,18 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.name == "EnemyAttack") //收到敌人攻击
         {
-            Log("hitDamage="+ hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
-            hit(collision.transform.parent.position.x > transform.position.x ? true : false);
+            if(collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackHeavy"))
+            {
+                Log("Heavy hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
+
+                hitHeavy(collision.transform.parent.position.x > transform.position.x ? true : false);
+            } else
+            {
+                Log("Normal hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
+
+                hit(collision.transform.parent.position.x > transform.position.x ? true : false);
+            }
+           
         }
     }
 
@@ -559,6 +570,21 @@ public class Player : MonoBehaviour
             playAudio("Audios/Tool/manHit1");
             rigiBody.AddForce(new Vector3(directionHit ? -10 : 10, 0, 0), ForceMode.Impulse);
             animator.SetTrigger("triggerHit");
+            Invoke("animatorHitEndEvent", 2.5f);
+        }
+    }
+
+    //受到重击伤害
+    public void hitHeavy(bool directionHit)
+    {
+        if (!isHitHeavy)
+        {
+            isHitHeavy = true;
+            hitDamage += 2;
+            playAudio("Audios/Tool/manHit1");
+            rigiBody.AddForce(new Vector3(directionHit ? -15 : 15, 15, 0), ForceMode.Impulse);
+            animator.SetTrigger("triggerHitHeavy");
+            Invoke("animatorHitHeavyEndEvent", 2.5f);
         }
     }
 
@@ -567,6 +593,17 @@ public class Player : MonoBehaviour
     {
         isHit = false;
   
+        ////静止
+        //rigi.velocity = new Vector3(0, 0, 0);
+        ////摆正
+        //transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    //hitHeavy动画事件 受击结束后
+    private void animatorHitHeavyEndEvent()
+    {
+        isHitHeavy = false;
+
         ////静止
         //rigi.velocity = new Vector3(0, 0, 0);
         ////摆正

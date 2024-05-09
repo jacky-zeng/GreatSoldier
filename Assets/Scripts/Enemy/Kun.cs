@@ -9,9 +9,11 @@ public class Kun : BaseEnemy
     void Start()
     {
         BaseStart();
+        moveSpeed = 6;
         //因为Kun这个敌人更大，需要改变上挑吸附距离
         xiFuLeft = new Vector3(5f, 3f, 0);
         xiFuRight = new Vector3(-5f, 3f, 0);
+        enemyAvatarSprite = Resources.Load<Sprite>("Images/Enemy/Kun/enemyAvatar") as Sprite;
     }
     #endregion
 
@@ -92,6 +94,10 @@ public class Kun : BaseEnemy
             {
                 stopAttack();
             }
+            if (isAttackHeavy)
+            {
+                stopAttackHeavy();
+            }
             //敌人朝向
             spriteRenderer.flipX = targetPosition.x < currentPosition.x ? true : false;
 
@@ -107,15 +113,26 @@ public class Kun : BaseEnemy
         {
             //停止移动
             stopWalk();
+
             //开始攻击
-            attack();
+            int randomInt = Random.Range(1, 19);
+            if (randomInt % 2 == 0 || randomInt % 3 == 0)
+            {
+                //Debug.Log("normal attack isAttack = " + isAttack);
+                attack();  //普通攻击
+            }
+            else
+            {
+                //Debug.Log("attackHeavy isAttackHeavy = " + isAttackHeavy);
+                attackHeavy(); //重击
+            }
         }
     }
 
     private void attack()
     {
         //开始攻击
-        if (!isAttack)
+        if (!isAttack && !isAttackHeavy)
         {
             //使攻击的朝向和主体保持一致
             emenyAttackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
@@ -123,6 +140,22 @@ public class Kun : BaseEnemy
             isHitOnGround = false;
             isAttack = true;
             animator.SetBool("isAttack", true);
+            Invoke("stopAttack", 3.5f);
+        }
+    }
+
+    private void attackHeavy()
+    {
+        //开始攻击
+        if (!isAttackHeavy && !isAttack)
+        {
+            //使攻击的朝向和主体保持一致
+            emenyAttackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
+            isJumpHit = false;
+            isHitOnGround = false;
+            isAttackHeavy = true;
+            animator.SetBool("isAttackHeavy", true);
+            Invoke("stopAttackHeavy", 3.5f);
         }
     }
 

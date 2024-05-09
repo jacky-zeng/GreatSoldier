@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: hit
+  m_Name: hitHeavy
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -21,19 +21,17 @@ AnimationClip:
   - serializedVersion: 2
     curve:
     - time: 0
-      value: {fileID: 21300000, guid: 431af9438756040c68e0deab64fa1210, type: 3}
-    - time: 0.25
-      value: {fileID: 21300000, guid: dec0180f037344526a90173982e06e80, type: 3}
-    - time: 0.5
-      value: {fileID: 21300000, guid: f46d6196b9efc4f41a71b7c3e3e595f3, type: 3}
-    - time: 0.75
-      value: {fileID: 21300000, guid: 1e593f9709d834bb58fb21ba0c7efa0c, type: 3}
+      value: {fileID: 21300000, guid: f16328210e3714659ba04f12c6b18ecd, type: 3}
+    - time: 0.33333334
+      value: {fileID: 21300000, guid: 65c4ef7f16f48498d92693b521e703cd, type: 3}
+    - time: 0.6666667
+      value: {fileID: 21300000, guid: 64d831ef6f0fb4746b7659356907038e, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
     script: {fileID: 0}
     flags: 2
-  m_SampleRate: 4
+  m_SampleRate: 3
   m_WrapMode: 0
   m_Bounds:
     m_Center: {x: 0, y: 0, z: 0}
@@ -50,10 +48,9 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
-    - {fileID: 21300000, guid: 431af9438756040c68e0deab64fa1210, type: 3}
-    - {fileID: 21300000, guid: dec0180f037344526a90173982e06e80, type: 3}
-    - {fileID: 21300000, guid: f46d6196b9efc4f41a71b7c3e3e595f3, type: 3}
-    - {fileID: 21300000, guid: 1e593f9709d834bb58fb21ba0c7efa0c, type: 3}
+    - {fileID: 21300000, guid: f16328210e3714659ba04f12c6b18ecd, type: 3}
+    - {fileID: 21300000, guid: 65c4ef7f16f48498d92693b521e703cd, type: 3}
+    - {fileID: 21300000, guid: 64d831ef6f0fb4746b7659356907038e, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
@@ -78,11 +75,4 @@ AnimationClip:
   m_EulerEditorCurves: []
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
-  m_Events:
-  - time: 0.75
-    functionName: animatorHitEndEvent
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
-    intParameter: 0
-    messageOptions: 0
+  m_Events: []

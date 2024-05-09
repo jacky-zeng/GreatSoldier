@@ -9,6 +9,7 @@ public class Ghost : BaseEnemy
     void Start()
     {
         BaseStart();
+        enemyAvatarSprite = Resources.Load<Sprite>("Images/Enemy/Ghost/enemyAvatar") as Sprite;
     }
     #endregion
 
@@ -122,6 +123,7 @@ public class Ghost : BaseEnemy
             isHitOnGround = false;
             isAttack = true;
             animator.SetBool("isAttack", true);
+            Invoke("stopAttack", 3.5f);
         }
     }
 
