@@ -345,8 +345,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 60.514523, y: 17.607767, z: 1}
-  m_Center: {x: 20.004957, y: 6.451062, z: 0}
+  m_Size: {x: 94.28119, y: 17.607767, z: 1}
+  m_Center: {x: 36.888283, y: 6.451062, z: 0}
 --- !u!1 &374869279
 GameObject:
   m_ObjectHideFlags: 0
@@ -1229,7 +1229,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1662148276
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1488,10 +1488,12 @@ MonoBehaviour:
   bloodBar: {fileID: 374869281}
   moveSpeed: 3
   JumpHitForce: 260
+  flyHitForce: 28
   upPosSpeed: 3
   xiFuLeft: {x: 2.5, y: 1.5, z: 0}
   xiFuRight: {x: -2.5, y: 1.5, z: 0}
-  maxBlood: 20
+  maxBlood: 100
+  enemyAvatarSprite: {fileID: 0}
   animator: {fileID: 0}
   rigi: {fileID: 0}
   spriteRenderer: {fileID: 0}
@@ -1567,7 +1569,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!136 &1732368680
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1826,10 +1828,12 @@ MonoBehaviour:
   bloodBar: {fileID: 374869281}
   moveSpeed: 3
   JumpHitForce: 260
+  flyHitForce: 20
   upPosSpeed: 3
   xiFuLeft: {x: 2.5, y: 1.5, z: 0}
   xiFuRight: {x: -2.5, y: 1.5, z: 0}
   maxBlood: 50
+  enemyAvatarSprite: {fileID: 0}
   animator: {fileID: 0}
   rigi: {fileID: 0}
   spriteRenderer: {fileID: 0}
@@ -2390,7 +2394,7 @@ Transform:
   m_GameObject: {fileID: 2071457762}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.069999695, y: 3.11, z: -5}
+  m_LocalPosition: {x: 0.069999695, y: 3.11, z: -4.83}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

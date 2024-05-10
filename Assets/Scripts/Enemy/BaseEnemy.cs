@@ -20,6 +20,7 @@ public class BaseEnemy : MonoBehaviour
     public float moveSpeed = 3;
 
     public int JumpHitForce = 260;
+    public int flyHitForce = 20;
     public float upPosSpeed = 3;          //被上挑时的离心距离
 
     //上挑时的吸附
@@ -107,6 +108,8 @@ public class BaseEnemy : MonoBehaviour
             isHitOnGround = true;
             Log("进入地面Ground OnCollisionEnter", true);
         }
+        //敌人碰撞体与地面垂直
+        CapCollider.direction = 1;
     }
 
     public void OnTriggerEnterOrStay(Collider other, string type)
@@ -152,6 +155,16 @@ public class BaseEnemy : MonoBehaviour
             {
                 Debug.Log("attackNormal4****");
                 hit(tempDirection, isChange, 2);
+            }
+            else if (tempAnimatorClipName.IsName("attackFly"))
+            {
+                if (!isJumpHit)
+                {
+                    isJumpHit = true;
+                    Debug.Log("attackFly****");
+                    byFlyHit(tempDirection);
+                    Invoke("cancelStatus", 0.3f);
+                }
             }
             else
             {
@@ -260,6 +273,19 @@ public class BaseEnemy : MonoBehaviour
         animator.SetTrigger("triggerJumpHit");
         rigi.AddForce(new Vector3(direction.x > 0 ? JumpHitForce : -JumpHitForce, 0, 0), ForceMode.Impulse);
         hit2Style();
+    }
+
+    //被起飞向上击飞
+    public void byFlyHit(Vector2 direction)
+    {
+        stopHit();
+        this.direction = direction;
+        animator.SetTrigger("triggerJumpHit");
+        rigi.velocity = new Vector3(direction.x > 0 ? flyHitForce/3 : -flyHitForce/3, flyHitForce, 0);
+        CapCollider.direction = 0;
+        isOnGround = false;
+        //rigi.AddForce(new Vector3(direction.x > 0 ? JumpHitForce : -JumpHitForce, JumpHitForce, 0), ForceMode.Impulse);
+        hitStyle(true);
     }
 
     //受到普通伤害

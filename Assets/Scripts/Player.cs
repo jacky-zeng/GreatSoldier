@@ -54,6 +54,13 @@ public class Player : MonoBehaviour
     private bool isJumpAttack = false;
     public float jumpForce = 18f;
 
+    //起飞（可以连招）攻击
+    private int attackFlyStep = 0;
+    private bool isAttackFly = false;
+    private float flyForce = 18f;
+    private float attackFlyDuringTime = 0;         //已持续时间
+    private float attackFlyMaxDuringTime = 3f;     //在该时间段内，按了 sd+攻击  才能触发起飞攻击
+
     //收到伤害
     //受到了几次伤害
     private float hitDamage = 0;
@@ -101,31 +108,39 @@ public class Player : MonoBehaviour
     private void LateUpdate()
     {
         /**相机x轴跟随角色**/
-        float tempX = transformCamera.position.x - transform.position.x;
-        if (Mathf.Abs(tempX) >= 25)//相机和角色位置相差一定距离的时候
-        {
-            cameraDirectionMove = tempX > 0 ? -1 : 1;
-        }
+        Vector3 currentPosition = transformCamera.position;
+        Vector3 targetPosition = new Vector3(transform.position.x, transformCameraY, transformCameraZ);
 
-        if (cameraDirectionMove != 0)
-        {
-            Vector3 currentPosition = transformCamera.position;
-            Vector3 targetPosition = new Vector3(transform.position.x, transformCameraY, transformCameraZ);
-            targetPosition += new Vector3(cameraDirectionMove > 0 ? 50 : -50, 0, 0);
-            // 计算移动的方向和距离
-            Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-            Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+        // 计算移动的方向和距离
+        Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+        transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
 
-            // 移动相机
-            transformCamera.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
+        /**相机x轴跟随角色（增加偏移）**/
+        //float tempX = transformCamera.position.x - transform.position.x;
+        //if (Mathf.Abs(tempX) >= 25)//相机和角色位置相差一定距离的时候
+        //{
+        //    cameraDirectionMove = tempX > 0 ? -1 : 1;
+        //}
+        //if (cameraDirectionMove != 0)
+        //{
+        //    Vector3 currentPosition = transformCamera.position;
+        //    Vector3 targetPosition = new Vector3(transform.position.x, transformCameraY, transformCameraZ);
+        //    targetPosition += new Vector3(cameraDirectionMove > 0 ? 50 : -50, 0, 0);
+        //    // 计算移动的方向和距离
+        //    Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+        //    Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
 
-            //Debug.Log(currentPosition.x - targetPosition.x);
-            // 移动到位后，停止移动
-            if (Mathf.Abs(Mathf.Abs(currentPosition.x - targetPosition.x) - 25) <= 3)
-            {
-                cameraDirectionMove = 0;
-            }
-        }
+        //    // 移动相机
+        //    transformCamera.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
+
+        //    //Debug.Log(currentPosition.x - targetPosition.x);
+        //    // 移动到位后，停止移动
+        //    if (Mathf.Abs(Mathf.Abs(currentPosition.x - targetPosition.x) - 25) <= 3)
+        //    {
+        //        cameraDirectionMove = 0;
+        //    }
+        //}
     }
 
     // Update is called once per frame
@@ -193,36 +208,80 @@ public class Player : MonoBehaviour
         }
 
         bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0);
-
         if (isOnGround == true && isHitHeavy == false) //在地面上
         {
-            if (Input.GetKeyDown(KeyCode.Space))   //跳跃
+            bool tempIsAttackFly = false;
+            attackFlyDuringTime += Time.deltaTime;
+            if (attackFlyDuringTime >= attackFlyMaxDuringTime)
             {
-                jump();
+                attackFlyStep = 0;
+                attackFlyDuringTime = 0;
             }
-            else if (vertical == 1 && horizontal == 0 && (isAttackUp || isGetMouseButtonDown0)) //上挑攻击：正在攻击过程中 或者 按了攻击键
+
+            if (attackFlyStep == 0)
             {
-                attackUp(isGetMouseButtonDown0);
+                if (vertical == -1)
+                {
+                    attackFlyStep = 1;
+                }
+                else
+                {
+                    attackFlyStep = 0;
+                }
             }
-            else if (isAttack || isGetMouseButtonDown0)  //普通攻击：正在攻击过程中 或者 按了攻击键
+            else if (attackFlyStep == 1)
             {
-                attackNormal(isGetMouseButtonDown0);
+                if (horizontal != 0)
+                {
+                    //改变player朝向
+                    spriteRenderer.flipX = (horizontal > 0 ? false : true);
+                    attackFlyStep = 2;
+                }
+                else
+                {
+                    attackFlyStep = 0;
+                }
             }
-            else  //移动
+            else if (attackFlyStep == 2)
             {
-                move();
+                if (isGetMouseButtonDown0)
+                {
+                    //满足起飞攻击条件
+                    tempIsAttackFly = attackFly();
+                }
+            }
+
+            if (!tempIsAttackFly)
+            {
+                if (Input.GetKeyDown(KeyCode.Space))   //跳跃
+                {
+                    jump();
+                }
+                else if (vertical == 1 && horizontal == 0 && (isAttackUp || isGetMouseButtonDown0)) //上挑攻击：正在攻击过程中 或者 按了攻击键
+                {
+                    attackUp(isGetMouseButtonDown0);
+                }
+                else if (isAttack || isGetMouseButtonDown0)  //普通攻击：正在攻击过程中 或者 按了攻击键
+                {
+                    attackNormal(isGetMouseButtonDown0);
+                }
+                else  //移动
+                {
+                    move();
+                }
             }
         }
         else //在空中
         {
-            if(isGetMouseButtonDown0) //空中攻击
+            if (isGetMouseButtonDown0) //空中攻击
             {
                 jumpAttack();
-            } else
+            }
+            else
             {
                 jumpMove();
             }
-            
+
         }
     }
 
@@ -239,6 +298,10 @@ public class Player : MonoBehaviour
     //在空中时，也能间断施加力
     private void jumpMove()
     {
+        if (isAttackFly)
+        {
+            return;
+        }
         if (timeRate >= 1.2f)
         {
             int extTimes = 1;
@@ -310,7 +373,7 @@ public class Player : MonoBehaviour
                 attackStep = 2;
                 animator.SetInteger("attackStep", attackStep);
             }
-            else if(animator.GetCurrentAnimatorStateInfo(0).IsName("attackNormal2"))
+            else if (animator.GetCurrentAnimatorStateInfo(0).IsName("attackNormal2"))
             {
                 attackStep = 3;
                 animator.SetInteger("attackStep", attackStep);
@@ -388,7 +451,7 @@ public class Player : MonoBehaviour
                 attackUpStep = 2;
                 animator.SetInteger("attackUpStep", attackUpStep);
             }
-            else if(animator.GetCurrentAnimatorStateInfo(0).IsName("attackUp2"))
+            else if (animator.GetCurrentAnimatorStateInfo(0).IsName("attackUp2"))
             {
                 attackUpStep = 3;
                 animator.SetInteger("attackUpStep", attackUpStep);
@@ -442,6 +505,37 @@ public class Player : MonoBehaviour
         }
     }
 
+    private bool attackFly()
+    {
+        if (!isAttackFly && !isAttack && !isJumpAttack && !isAttackUp)
+        {
+            isAttackFly = true;
+            animator.SetBool("isAttackFly", true);
+
+            //使攻击的武器朝向和player保持一致
+            attackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
+            //玩家向上移动一点，便于起跳 （z轴加一点，抵消按S键导致的少量位移）
+            rigiBody.velocity = new Vector3(rigiBody.velocity.x, rigiBody.velocity.y, 0);
+            transform.position = new Vector3(transform.position.x, transform.position.y + 0.3f, transform.position.z + 1f);
+            //给角色一个瞬间斜向上的力
+            rigiBody.AddForce(new Vector3(spriteRenderer.flipX ? -flyForce : flyForce, flyForce, 0), ForceMode.Impulse);
+        }
+        //重置
+        attackFlyStep = 0;
+        attackFlyDuringTime = 0;
+        return isAttackFly;
+    }
+
+    private void stopAttackFly()
+    {
+        if (isAttackFly)
+        {
+            isAttackFly = false;
+            animator.SetBool("isStand", true);
+            animator.SetBool("isAttackFly", false);
+        }
+    }
+
     private void jump()
     {
         stopAttack();
@@ -482,7 +576,7 @@ public class Player : MonoBehaviour
 
     private void stopJumpAttack()
     {
-        if(isJumpAttack)
+        if (isJumpAttack)
         {
             isJumpAttack = false;
             animator.SetBool("isStand", true);
@@ -500,6 +594,7 @@ public class Player : MonoBehaviour
             isOnGround = true;
 
             stopJumpAttack();
+            stopAttackFly();
             Log("进入地面Ground OnCollisionEnter", true);
         }
     }
@@ -512,6 +607,7 @@ public class Player : MonoBehaviour
             isOnGround = true;
 
             stopJumpAttack();
+            stopAttackFly();
             Log("待在地面Ground OnCollisionStay", true);
         }
     }
@@ -541,18 +637,19 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.name == "EnemyAttack") //收到敌人攻击
         {
-            if(collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackHeavy"))
+            if (collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackHeavy"))
             {
-                Log("Heavy hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
+                //Log("Heavy hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
 
                 hitHeavy(collision.transform.parent.position.x > transform.position.x ? true : false);
-            } else
+            }
+            else
             {
-                Log("Normal hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
+                //Log("Normal hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
 
                 hit(collision.transform.parent.position.x > transform.position.x ? true : false);
             }
-           
+
         }
     }
 
@@ -592,7 +689,7 @@ public class Player : MonoBehaviour
     private void animatorHitEndEvent()
     {
         isHit = false;
-  
+
         ////静止
         //rigi.velocity = new Vector3(0, 0, 0);
         ////摆正
