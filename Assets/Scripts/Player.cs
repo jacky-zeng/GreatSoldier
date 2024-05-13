@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Player : MonoBehaviour
@@ -76,6 +77,10 @@ public class Player : MonoBehaviour
     private float transformCameraY;
     private float transformCameraZ;
 
+    private string sceneName;
+
+    private bool isCameraActionEnd = false; //是否运镜结束
+    
     #endregion
 
     #region 初始化
@@ -86,6 +91,8 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         rigiBody = GetComponent<Rigidbody>();
+
+        sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
         transformCamera = Camera.main.transform;
         transformCameraY = transformCamera.position.y;
@@ -100,21 +107,81 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        switch (sceneName)
+        {
+            case "SceneSection1_1":
+                transformCamera.position = new Vector3(6, transformCamera.position.y, transformCamera.position.z);
+                break;
+            case "SceneSection1_2":
+                transformCamera.position = new Vector3(-22.3f, transformCamera.position.y, transformCamera.position.z);
+                break;
+            case "SceneSection1_3":
+                transformCamera.position = new Vector3(20, transformCamera.position.y, transformCamera.position.z);
+                break;
+        }
     }
     #endregion
 
     #region 帧
     private void LateUpdate()
     {
-        /**相机x轴跟随角色**/
-        Vector3 currentPosition = transformCamera.position;
-        Vector3 targetPosition = new Vector3(transform.position.x, transformCameraY, transformCameraZ);
+        if (isCameraActionEnd)
+        {
+            /**相机x轴跟随角色**/
+            Vector3 currentPosition = transformCamera.position;
+            float posX = transform.position.x;
+            float posY = transformCameraY;
+            
+             if (sceneName == "SceneSection1_1")
+            {
+                if (transform.position.x <= 6)
+                {
+                    posX = 6;
+                }
+                else if (transform.position.x >= 50.3)
+                {
+                    posX = 50.3f;
+                }
+            }
+            else if (sceneName == "SceneSection1_2")
+            {
+                if (transform.position.x <= 2.8)
+                {
+                    posX = 2.8f;
+                }
+                else if (transform.position.x >= 16.3f)
+                {
+                    posX = 16.3f;
+                }
+                posY = transform.position.z + 33;
+                if (posY <= 17.6f)
+                {
+                    posY = 17.6f;
+                }
+                else if (posY >= 25.1f)
+                {
+                    posY = 25.1f;
+                }
+            }
+            else if (sceneName == "SceneSection1_3")
+            {
+                if (transform.position.x <= 43.8)
+                {
+                    posX = 43.8f;
+                }
+                else if (transform.position.x >= 83.2)
+                {
+                    posX = 83.2f;
+                }
+            }
 
-        // 计算移动的方向和距离
-        Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
-        transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
+            Vector3 targetPosition = new Vector3(posX, posY, transformCameraZ);
+
+            // 计算移动的方向和距离
+            Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+            Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+            transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
+        }
 
         /**相机x轴跟随角色（增加偏移）**/
         //float tempX = transformCamera.position.x - transform.position.x;
@@ -146,32 +213,110 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //血条改变
-        bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
+        if (!isCameraActionEnd)
+        {
+            Vector3 currentPosition = transformCamera.position;
+            float posX = 2.9f;
+            switch (sceneName)
+            {
+                case "SceneSection1_1":
+                    isCameraActionEnd = true;
+                    break;
+                case "SceneSection1_2":
+                    /**相机移动**/
+                    if (currentPosition.x >= 2.8)
+                    {
+                        isCameraActionEnd = true;
+                    }
+                    else
+                    {
+                        Vector3 targetPosition = new Vector3(posX, transformCameraY, transformCameraZ);
+                        //// 更新相机位置
+                        ///private Vector3 camVelocity = Vector3.zero;
+                        //transformCamera.position = Vector3.SmoothDamp(currentPosition, targetPosition, ref camVelocity, 5f);
 
-        if (isDie)
-        {
-            //已死亡 todo 结束游戏界面
-        }
-        else if (hitDamage >= maxBlood) //死亡
-        {
-            die();
+                        //// 计算移动的方向和距离
+                        Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+                        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+                        transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
+
+                    }
+                    break;
+                case "SceneSection1_3":
+                    /**相机移动**/
+                    posX = 43.9f;
+
+                    if (currentPosition.x >= 43.8)
+                    {
+                        isCameraActionEnd = true;
+                    }
+                    else
+                    {
+                        Vector3 targetPosition = new Vector3(posX, transformCameraY, transformCameraZ);
+                        //// 更新相机位置
+                        ///private Vector3 camVelocity = Vector3.zero;
+                        //transformCamera.position = Vector3.SmoothDamp(currentPosition, targetPosition, ref camVelocity, 5f);
+
+                        //// 计算移动的方向和距离
+                        Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+                        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+                        transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
+                    }
+                    break;
+            }
         }
         else
         {
-            if (!isEnd)
+            switch (sceneName)
             {
-                if (isUnmatched)
-                {
-                    unmatchedSecond -= Time.deltaTime;
-                    if (unmatchedSecond <= 0)
+                case "SceneSection1_1":
+                    if(transform.position.x >= 66)
                     {
-                        Log("无敌已过" + Time.deltaTime);
-                        isUnmatched = false;
+                        //清空对象池
+                        ObjectPool.Instance.init();
+                        //加载场景2
+                        SceneManager.LoadScene("SceneSection1_2", LoadSceneMode.Single);
                     }
-                }
+                    break;
+                case "SceneSection1_2":
+                    if (transform.position.x >= 31)
+                    {
+                        //清空对象池
+                        ObjectPool.Instance.init();
+                        //加载场景3
+                        SceneManager.LoadScene("SceneSection1_3", LoadSceneMode.Single);
+                    }
+                    break;
+            }
 
-                action();
+
+            //血条改变
+            bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
+
+            if (isDie)
+            {
+                //已死亡 todo 结束游戏界面
+            }
+            else if (hitDamage >= maxBlood) //死亡
+            {
+                die();
+            }
+            else
+            {
+                if (!isEnd)
+                {
+                    if (isUnmatched)
+                    {
+                        unmatchedSecond -= Time.deltaTime;
+                        if (unmatchedSecond <= 0)
+                        {
+                            Log("无敌已过" + Time.deltaTime);
+                            isUnmatched = false;
+                        }
+                    }
+
+                    action();
+                }
             }
         }
     }

@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class Ghost : BaseEnemy
 {
+    private bool isBegin = false;
+
     #region 初始化
     void Start()
     {
@@ -22,29 +24,40 @@ public class Ghost : BaseEnemy
         //    bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
         //}
 
-        if (isDie)
+        if(isBegin)
         {
-            //已死亡
-        }
-        else if (hitDamage >= maxBlood) //死亡
+            if (isDie)
+            {
+                //已死亡
+            }
+            else if (hitDamage >= maxBlood) //死亡
+            {
+                die();
+            }
+            else
+            {
+                if (isHit)
+                {
+                    byHit();
+                }
+                else if (isUpHit)
+                {
+                    byUpHit();
+                }
+                else if (!isHitOnGround && !isJumpHit)
+                {
+                    walk();
+                }
+            }
+        } else
         {
-            die();
+            Invoke("begin", 5);
         }
-        else
-        {
-            if (isHit)
-            {
-                byHit();
-            }
-            else if (isUpHit)
-            {
-                byUpHit();
-            }
-            else if (!isHitOnGround && !isJumpHit)
-            {
-                walk();
-            }
-        }
+    }
+
+    private void begin()
+    {
+        isBegin = true;
     }
 
     #region 碰撞
@@ -130,6 +143,7 @@ public class Ghost : BaseEnemy
     //死亡
     private void die()
     {
+        isBegin = false;
         isDie = true;
         //rigi.isKinematic = true;
         //CapCollider.enabled = false;

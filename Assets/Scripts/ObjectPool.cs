@@ -24,6 +24,22 @@ public class ObjectPool
         }
     }
 
+    public void init()
+    {
+        objectPool.Clear();
+    }
+
+    public int getCount()
+    {
+        if(objectPool != null)
+        {
+            return objectPool.Count;
+        } else
+        {
+            return 0;
+        }
+    }
+
     //创建
     public GameObject Get(GameObject prefab, Vector3 pos, Vector3 scale, bool disableScale = false)
     {
