@@ -60,7 +60,7 @@ public class Player : MonoBehaviour
     private bool isAttackFly = false;
     private float flyForce = 18f;
     private float attackFlyDuringTime = 0;         //已持续时间
-    private float attackFlyMaxDuringTime = 3f;     //在该时间段内，按了 sd+攻击  才能触发起飞攻击
+    private float attackFlyMaxDuringTime = 1.8f;   //在该时间段内，按了 sd+攻击  才能触发起飞攻击
 
     //收到伤害
     //受到了几次伤害

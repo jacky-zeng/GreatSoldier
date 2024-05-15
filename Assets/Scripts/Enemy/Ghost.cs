@@ -92,28 +92,29 @@ public class Ghost : BaseEnemy
 
         if (Mathf.Abs(distance.x) >= 2.7f || Mathf.Abs(distance.y) > 1.5f || Mathf.Abs(distance.z) > 2f)
         {
+            //敌人朝向
+            spriteRenderer.flipX = targetPosition.x < currentPosition.x ? true : false;
+            //停止攻击
+            if (isAttack)
+            {
+                stopAttack();
+            }
             if (!isWalk)
             {
                 isWalk = true;
                 isJumpHit = false;
                 isHitOnGround = false;
                 animator.SetBool("isWalk", true);
-            }
-            //停止攻击
-            if (isAttack)
+            } else
             {
-                stopAttack();
+                // 计算移动的方向和距离
+                Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+                Vector3 moveDirection = directionToTarget * moveSpeed * Time.deltaTime;
+
+                //Debug.Log("移动物体 靠近Player");
+                // 移动物体
+                transform.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
             }
-            //敌人朝向
-            spriteRenderer.flipX = targetPosition.x < currentPosition.x ? true : false;
-
-            // 计算移动的方向和距离
-            Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-            Vector3 moveDirection = directionToTarget * moveSpeed * Time.deltaTime;
-
-            //Debug.Log("移动物体 靠近Player");
-            // 移动物体
-            transform.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
         }
         else  //离player近，可以攻击
         {

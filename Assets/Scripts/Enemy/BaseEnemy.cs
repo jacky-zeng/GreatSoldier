@@ -421,9 +421,11 @@ public class BaseEnemy : MonoBehaviour
     //hitStandUp动画事件 从地面爬起后
     public void animatorHitStandUpFirstEvent()
     {
-        ////敌人碰撞体与地面平行
-        //CapCollider.direction = 0;
-        //CapCollider.center = new Vector3(0, -2, 0);
+        if(isOnGround)
+        {
+            //禁用敌人碰撞体
+            CapCollider.enabled = false;
+        }
         //敌人静止
         rigi.velocity = new Vector3(0, 0, 0);
         //敌人摆正
@@ -433,10 +435,9 @@ public class BaseEnemy : MonoBehaviour
     //hitStandUp动画事件 从地面爬起后
     public void animatorHitStandUpEvent()
     {
-        ////敌人碰撞体与地面垂直
-        //CapCollider.direction = 1;
-        //CapCollider.center = new Vector3(0, 0, 0);
-        //transform.rotation = Quaternion.Euler(0, 0, 0);
+        //启用敌人碰撞体
+        CapCollider.enabled = true;
+        
         isJumpHit = false;
         isHitOnGround = false;
         Debug.Log("***爬起动画结束 isJumpHit=" + isJumpHit);

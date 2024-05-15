@@ -74,6 +74,7 @@ public class StartGame : MonoBehaviour
             pIndex = 1;
         }
 
+        MusicManager.instance.playAudio("Audios/Background/ding4");
         switch (pIndex)
         {
             case 1:
