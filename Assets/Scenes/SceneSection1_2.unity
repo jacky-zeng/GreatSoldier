@@ -2211,6 +2211,7 @@ MonoBehaviour:
   jumpForce: 18
   maxBlood: 50
   bloodBar: {fileID: 1738368558}
+  mapStage1: {fileID: 0}
 --- !u!54 &2071457770
 Rigidbody:
   m_ObjectHideFlags: 0

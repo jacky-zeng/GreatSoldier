@@ -80,7 +80,9 @@ public class Player : MonoBehaviour
     private string sceneName;
 
     private bool isCameraActionEnd = false; //是否运镜结束
-    
+
+    public GameObject mapStage1;
+
     #endregion
 
     #region 初始化
@@ -110,7 +112,8 @@ public class Player : MonoBehaviour
         switch (sceneName)
         {
             case "SceneSection1_1":
-                transformCamera.position = new Vector3(6, transformCamera.position.y, transformCamera.position.z);
+                MusicManager.instance.playAudio("Audios/Background/section1Begin");
+                transformCamera.position = new Vector3(3, transformCamera.position.y, transformCamera.position.z);
                 break;
             case "SceneSection1_2":
                 transformCamera.position = new Vector3(-22.3f, transformCamera.position.y, transformCamera.position.z);
@@ -131,12 +134,12 @@ public class Player : MonoBehaviour
             Vector3 currentPosition = transformCamera.position;
             float posX = transform.position.x;
             float posY = transformCameraY;
-            
-             if (sceneName == "SceneSection1_1")
+
+            if (sceneName == "SceneSection1_1")
             {
-                if (transform.position.x <= 6)
+                if (transform.position.x <= 3)
                 {
-                    posX = 6;
+                    posX = 3;
                 }
                 else if (transform.position.x >= 50.3)
                 {
@@ -220,7 +223,24 @@ public class Player : MonoBehaviour
             switch (sceneName)
             {
                 case "SceneSection1_1":
-                    isCameraActionEnd = true;
+                    /**相机移动**/
+                    if (currentPosition.y <= 14.9)
+                    {
+                        //结束过场动画
+                        isCameraActionEnd = true;
+                        transformCameraY = 14.8f;
+                        MusicManager.instance.playAudio("Audios/Background/bg", true);
+                        mapStage1.GetComponent<mapStage>().begin();
+                    }
+                    else
+                    {
+                        Vector3 targetPosition = new Vector3(3, 14.8f, transformCameraZ);
+
+                        //// 计算移动的方向和距离
+                        Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+                        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+                        transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
+                    }
                     break;
                 case "SceneSection1_2":
                     /**相机移动**/
@@ -270,7 +290,7 @@ public class Player : MonoBehaviour
             switch (sceneName)
             {
                 case "SceneSection1_1":
-                    if(transform.position.x >= 66)
+                    if (transform.position.x >= 66)
                     {
                         //清空对象池
                         ObjectPool.Instance.init();
