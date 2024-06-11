@@ -6,17 +6,23 @@ using UnityEngine.UI;
 public class BaseEnemy : MonoBehaviour
 {
     #region 变量定义
+    [HideInInspector]
     public GameObject player;
+
     public GameObject hitPoint;
     public GameObject hitObj;
     public GameObject hit2Obj;
     public GameObject emenyAttackObj;
     //血条对象
+    [HideInInspector]
     public GameObject enemyHealthObj;
     //血条头像
+    [HideInInspector]
     public Image enemyAvatar;
     //血条
+    [HideInInspector]
     public Image bloodBar;
+
     public float moveSpeed = 3;
 
     public int JumpHitForce = 260;
@@ -66,7 +72,9 @@ public class BaseEnemy : MonoBehaviour
     [HideInInspector]
     public bool isAttack = false;
     [HideInInspector]
-    public bool isAttackHeavy = false;
+    public bool isAttackHeavy = false; 
+    [HideInInspector]
+    public bool isJumpAttack = false;
     [HideInInspector]
     public bool isHit = false;           //是否收到普通伤害
     [HideInInspector]
@@ -85,13 +93,19 @@ public class BaseEnemy : MonoBehaviour
     public bool isOnGround = true;       //是否在地面上
     #endregion
 
-    public void BaseStart()
+    public void BaseAwake()
     {
         animator = GetComponent<Animator>();
         rigi = GetComponent<Rigidbody>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
         CapCollider = GetComponent<CapsuleCollider>();
+        player = GameObject.Find("Player");
+        enemyHealthObj = GameObject.Find("Canvas").transform.Find("EnemyHealth").gameObject;
+
+        enemyAvatar = GameObject.Find("Canvas").transform.Find("EnemyHealth").GetComponent<Image>();
+        bloodBar = GameObject.Find("Canvas").transform.Find("EnemyHealth")
+            .transform.Find("EnemyHealthBg").transform.Find("bloodBar").GetComponent<Image>();
     }
 
     #region 碰撞
@@ -245,7 +259,7 @@ public class BaseEnemy : MonoBehaviour
 
             tempAngle = 20 * directionX;
 
-            transform.position += new Vector3(upPosSpeed * 2 * directionX, upPosSpeed, 0);
+            transform.position += new Vector3(upPosSpeed * 1.5f * directionX, upPosSpeed, 0);
 
             //围绕pivotPoint点，物体旋转angle度
             transform.RotateAround(player.transform.position, Vector3.forward, angle);
@@ -453,6 +467,12 @@ public class BaseEnemy : MonoBehaviour
     {
         isAttackHeavy = false;
         animator.SetBool("isAttackHeavy", false);
+    }
+
+    public void stopJumpAttack()
+    {
+        isJumpAttack = false;
+        animator.SetBool("isJumpAttack", false);
     }
 
     public void stopWalk()

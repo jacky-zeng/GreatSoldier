@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets/Scripts/MusicManager.cs" />
+    <Compile Include="Assets/Scripts/Enemy/LeiShen.cs" />
     <Compile Include="Assets/Scripts/Map/mapStage.cs" />
     <Compile Include="Assets/Scripts/Enemy/BaseEnemy.cs" />
     <Compile Include="Assets/Scripts/Tool/Hit.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Assets/Scripts/Enemy/Ghost.cs" />
     <Compile Include="Assets/Scripts/Tool/Hit2.cs" />
     <Compile Include="Assets/Scripts/Player.cs" />
+    <Compile Include="Assets/Scripts/GameManager.cs" />
     <Compile Include="Assets/Scripts/StartGame.cs" />
     <Compile Include="Assets/Scripts/Enemy/Kun.cs" />
   </ItemGroup>

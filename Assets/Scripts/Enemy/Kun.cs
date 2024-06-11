@@ -5,10 +5,14 @@ using UnityEngine.UI;
 
 public class Kun : BaseEnemy
 {
+    private void Awake()
+    {
+        BaseAwake();
+    }
+
     #region 初始化
     void Start()
     {
-        BaseStart();
         moveSpeed = 6;
         //因为Kun这个敌人更大，需要改变上挑吸附距离
         xiFuLeft = new Vector3(5f, 3f, 0);
@@ -88,6 +92,10 @@ public class Kun : BaseEnemy
             if (isAttack)
             {
                 stopAttack();
+            }
+            if (isAttackHeavy)
+            {
+                stopAttackHeavy();
             }
             if (!isWalk)
             {

@@ -7,10 +7,18 @@ public class Ghost : BaseEnemy
 {
     private bool isBegin = false;
 
+    private Vector3 targetPosition;
+    private float walkMaxDuringTime = 3f;  //移动持续最大时间
+    private float walkDuringTime = 0;      //移动已持续时间
+
+    private void Awake()
+    {
+        BaseAwake();
+    }
+
     #region 初始化
     void Start()
     {
-        BaseStart();
         enemyAvatarSprite = Resources.Load<Sprite>("Images/Enemy/Ghost/enemyAvatar") as Sprite;
     }
     #endregion
@@ -46,18 +54,65 @@ public class Ghost : BaseEnemy
                 }
                 else if (!isHitOnGround && !isJumpHit)
                 {
-                    walk();
+                    if(walkDuringTime == 0)
+                    {
+                        targetPosition = player.transform.position; //获取的是walkMaxDuringTime前的player所在位置
+                    }
+
+                    if ( walkDuringTime >= walkMaxDuringTime)
+                    {
+                        walkDuringTime = 0;
+                    } else
+                    {
+                        walkDuringTime += Time.deltaTime;
+                    }
+                    
+                    // 获取物体当前位置
+                    Vector3 currentPosition = transform.position;
+
+                    Vector3 distance = targetPosition - currentPosition;
+
+                    if (Mathf.Abs(distance.x) >= 2.7f || Mathf.Abs(distance.y) > 1.5f || Mathf.Abs(distance.z) > 2f)
+                    {
+                        walk(currentPosition, targetPosition);
+                    }
+                    else  //离player近，可以攻击
+                    {
+                        //停止移动
+                        stopWalk();
+                        //开始攻击
+                        attack();
+                    }
                 }
             }
         } else
         {
-            Invoke("begin", 5);
+            Invoke("begin", 15);
         }
     }
 
     private void begin()
     {
         isBegin = true;
+    }
+
+    public void changeAnimatorStatus(int type)
+    {
+        switch(type)
+        {
+            case 1:
+                //使用默认动画xx
+                break;
+            case 2:
+                //使用walk动画
+                animator.SetBool("isWalk", true);
+                break;
+            case 3:
+                //使用land动画 （躲井盖）
+                animator.SetBool("isLand", true);
+                break;
+            default:break;
+        }
     }
 
     #region 碰撞
@@ -81,47 +136,31 @@ public class Ghost : BaseEnemy
     #endregion
 
     //移动
-    private void walk()
+    private void walk(Vector3 currentPosition, Vector3 targetPosition)
     {
-        Vector3 targetPosition = player.transform.position;
-
-        // 获取物体当前位置
-        Vector3 currentPosition = transform.position;
-
-        Vector3 distance = targetPosition - currentPosition;
-
-        if (Mathf.Abs(distance.x) >= 2.7f || Mathf.Abs(distance.y) > 1.5f || Mathf.Abs(distance.z) > 2f)
+        //敌人朝向
+        spriteRenderer.flipX = targetPosition.x < currentPosition.x ? true : false;
+        //停止攻击
+        if (isAttack)
         {
-            //敌人朝向
-            spriteRenderer.flipX = targetPosition.x < currentPosition.x ? true : false;
-            //停止攻击
-            if (isAttack)
-            {
-                stopAttack();
-            }
-            if (!isWalk)
-            {
-                isWalk = true;
-                isJumpHit = false;
-                isHitOnGround = false;
-                animator.SetBool("isWalk", true);
-            } else
-            {
-                // 计算移动的方向和距离
-                Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-                Vector3 moveDirection = directionToTarget * moveSpeed * Time.deltaTime;
-
-                //Debug.Log("移动物体 靠近Player");
-                // 移动物体
-                transform.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
-            }
+            stopAttack();
         }
-        else  //离player近，可以攻击
+        if (!isWalk)
         {
-            //停止移动
-            stopWalk();
-            //开始攻击
-            attack();
+            isWalk = true;
+            isJumpHit = false;
+            isHitOnGround = false;
+            animator.SetBool("isWalk", true);
+        }
+        else
+        {
+            // 计算移动的方向和距离
+            Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+            Vector3 moveDirection = directionToTarget * moveSpeed * Time.deltaTime;
+
+            //Debug.Log("移动物体 靠近Player");
+            // 移动物体
+            transform.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
         }
     }
 
@@ -144,6 +183,9 @@ public class Ghost : BaseEnemy
     //死亡
     private void die()
     {
+        //调用管理器，设置敌人死亡
+        GameManager.instance.section1EnemyDied(int.Parse(gameObject.name.Split('_')[1]), gameObject.name);
+
         isBegin = false;
         isDie = true;
         //rigi.isKinematic = true;
@@ -157,5 +199,6 @@ public class Ghost : BaseEnemy
         ////敌人摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
         animator.SetTrigger("triggerDie");
+       
     }
 }

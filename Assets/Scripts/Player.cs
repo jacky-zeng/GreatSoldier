@@ -69,6 +69,7 @@ public class Player : MonoBehaviour
     public float maxBlood = 10;
     private bool isHit = false;
     private bool isHitHeavy = false;
+    private bool isHitJump = false;
     //血条
     public Image bloodBar;
 
@@ -290,7 +291,7 @@ public class Player : MonoBehaviour
             switch (sceneName)
             {
                 case "SceneSection1_1":
-                    if (transform.position.x >= 66)
+                    if (transform.position.x >= 66 && GameManager.instance.isSection1EnemyAllDied(1))
                     {
                         //清空对象池
                         ObjectPool.Instance.init();
@@ -373,7 +374,7 @@ public class Player : MonoBehaviour
         }
 
         bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0);
-        if (isOnGround == true && isHitHeavy == false) //在地面上
+        if (isOnGround == true && isHitHeavy == false && isHitJump == false) //在地面上
         {
             bool tempIsAttackFly = false;
             attackFlyDuringTime += Time.deltaTime;
@@ -802,17 +803,21 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.name == "EnemyAttack") //收到敌人攻击
         {
+            bool directionHit = collision.transform.parent.position.x > transform.position.x ? true : false;
             if (collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackHeavy"))
             {
                 //Log("Heavy hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
 
-                hitHeavy(collision.transform.parent.position.x > transform.position.x ? true : false);
+                hitHeavy(directionHit);
+            } else if(collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("jumpAttack"))
+            {
+                hitJump(directionHit);
             }
             else
             {
                 //Log("Normal hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
 
-                hit(collision.transform.parent.position.x > transform.position.x ? true : false);
+                hit(directionHit);
             }
 
         }
@@ -850,6 +855,20 @@ public class Player : MonoBehaviour
         }
     }
 
+    //受到跳起来的下砸伤害
+    public void hitJump(bool directionHit)
+    {
+        if (!isHitJump)
+        {
+            isHitJump = true;
+            hitDamage += 3;
+            playAudio("Audios/Tool/manHit1");
+            rigiBody.AddForce(new Vector3(directionHit ? -15 : 15, 20, 0), ForceMode.Impulse);
+            animator.SetTrigger("triggerHitHeavy");
+            Invoke("animatorHitHeavyEndEvent", 2.5f);
+        }
+    }
+
     //hit动画事件 受击结束后
     private void animatorHitEndEvent()
     {
@@ -865,6 +884,7 @@ public class Player : MonoBehaviour
     private void animatorHitHeavyEndEvent()
     {
         isHitHeavy = false;
+        isHitJump = false;
 
         ////静止
         //rigi.velocity = new Vector3(0, 0, 0);
