@@ -10,13 +10,17 @@ public class GameManager : MonoBehaviour
     private string sceneName; //场景名称
     public GameObject prefabGhost;
 
-    private bool isOkSection1 = false;
-    private bool isOkSection2 = false;
-    private bool isOkSection3 = false;
+    private bool isOkSectionOne1 = false;
+    private bool isOkSectionOne2 = false;
+    private bool isOkSectionOne3 = false;
 
-    private Dictionary<string, GameObject> section1Enemys = new Dictionary<string, GameObject>();
-    private Dictionary<string, GameObject> section2Enemys = new Dictionary<string, GameObject>();
-    private Dictionary<string, GameObject> section3Enemys = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> sectionOne1Enemys = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> sectionOne2Enemys = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> sectionOne3Enemys = new Dictionary<string, GameObject>();
+
+    //player相关信息
+    private float playerPosZ;           //切换场景时，记录在上一个场景中的z值
+    private float playerHitDamage = 0;  //切换场景时，记录在上一个场景中的hitDamage值
 
     void Awake()
     {
@@ -40,20 +44,21 @@ public class GameManager : MonoBehaviour
         switch (sceneName)
         {
             case "SceneSection1_1":
-                if (!isOkSection1)
+                if (!isOkSectionOne1)
                 {
-                    section1Load(1);
+                    sectionOneLoad(1);
                     Debug.Log("GameManager " + sceneName);
                 }
                 break;
             case "SceneSection1_2":
-                if (!isOkSection2)
+                if (!isOkSectionOne2)
                 {
+                    sectionOneLoad(2);
                     Debug.Log("GameManager " + sceneName);
                 }
                 break;
             case "SceneSection1_3":
-                if (!isOkSection3)
+                if (!isOkSectionOne3)
                 {
                     Debug.Log("GameManager " + sceneName);
                 }
@@ -61,46 +66,136 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public float getPlayerPosZ()
+    {
+        return playerPosZ;
+    }
+
+    public void setPlayerPosZ(float posZ)
+    {
+        playerPosZ = posZ;
+    }
+
+    public float getPlayerHitDamage()
+    {
+        return playerHitDamage;
+    }
+
+    public void setPlayerHitDamage(float hitDamage)
+    {
+        playerHitDamage = hitDamage;
+    }
+
     //加载第一关第index部分的敌人
-    private void section1Load(int index)
+    private void sectionOneLoad(int index)
+    {
+        //敌人gameobject命名 #关卡  ｜第几个敌人  _关卡中的场景index
+        if (index == 1)
+        {
+            isOkSectionOne1 = true;
+
+            enemyAdd(index, "EnemyGhost#1|1", new Vector3(28.73f, 0.85f, 3), 1);
+            enemyAdd(index, "EnemyGhost#1|2", new Vector3(23.9f, 0.85f, -1), 2);
+            enemyAdd(index, "EnemyGhost#1|3", new Vector3(28.88f, 0.846f, -8.95f), 3);
+
+            enemyAdd(index, "EnemyGhost#1|4", new Vector3(58.5f, 0.85f, -4.35f), 2);
+        }
+        else if (index == 2)
+        {
+            isOkSectionOne2 = true;
+            enemyAdd(index, "EnemyGhost#1|1", new Vector3(-1.7f, 0.846f, -10.52f), 3);
+        }
+    }
+
+    private void enemyAdd(int index, string name, Vector3 pos, int animatorType)
+    {
+        GameObject gameObjectInit = Instantiate(prefabGhost);
+        gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
+        gameObjectInit.GetComponent<Ghost>().changeAnimatorStatus(animatorType);
+        string gameObjectName = name + "_" + index.ToString();
+        gameObjectInit.gameObject.name = gameObjectName;
+        if (index == 1)
+        {
+            sectionOne1Enemys.Add(gameObjectName, gameObjectInit);
+        }
+        else if (index == 2)
+        {
+            sectionOne2Enemys.Add(gameObjectName, gameObjectInit);
+        }
+    }
+
+    //Player.cs调用该方法（player走到一定位置，触发敌人开始）
+    public void sectionOneEnemyBegin(int index, int max)
     {
         if (index == 1)
         {
-            isOkSection1 = true;
+            foreach (KeyValuePair<string, GameObject> sectionOne1Enemy in sectionOne1Enemys)
+            {
+                int enemy = int.Parse(sectionOne1Enemy.Key.Split("_")[0].Split("|")[1]);
+                if (enemy <= max)
+                {
+                    sectionOne1Enemy.Value.GetComponent<Ghost>().begin();
+                }
+            }
+        }
+        else if (index == 2)
+        {
+            foreach (KeyValuePair<string, GameObject> sectionOne2Enemy in sectionOne2Enemys)
+            {
+                int enemy = int.Parse(sectionOne2Enemy.Key.Split("_")[0].Split("|")[1]);
+                if (enemy <= max)
+                {
+                    sectionOne2Enemy.Value.GetComponent<Ghost>().begin();
+                }
+            }
+        }
+    }
 
-            GameObject gameObjectInit1 = Instantiate(prefabGhost);
-            gameObjectInit1.transform.localPosition = new Vector3(28.73f, 0.85f, 3);  //必须使用localPosition
-            gameObjectInit1.GetComponent<Ghost>().changeAnimatorStatus(1);
-            string gameObject1Name = "EnemyGhost1_" + index.ToString();
-            gameObjectInit1.gameObject.name = gameObject1Name;
-
-            section1Enemys.Add(gameObject1Name, gameObjectInit1);
-
-            GameObject gameObjectInit2 = Instantiate(prefabGhost);
-            gameObjectInit2.transform.localPosition = new Vector3(18.73f, 0.85f, 3);  //必须使用localPosition
-            gameObjectInit2.GetComponent<Ghost>().changeAnimatorStatus(2);
-            string gameObject2Name = "EnemyGhost2_" + index.ToString();
-            gameObjectInit2.gameObject.name = gameObject2Name;
-
-            section1Enemys.Add(gameObject2Name, gameObjectInit2);
+    //第一关的boss开始
+    public void sectionOneBossBegin()
+    {
+        GameObject boss = GameObject.Find("EnemyKun");
+        if (boss != null)
+        {
+            boss.gameObject.GetComponent<Kun>().begin();
         }
     }
 
     //第一关第index部分的敌人死了
-    public void section1EnemyDied(int index, string gameObjectName)
+    public void sectionEnemyDied(string gameObjectName)
     {
-        if (index == 1)
+        int section = int.Parse(gameObjectName.Split('|')[0].Split("#")[1]);
+        int index = int.Parse(gameObjectName.Split('_')[1]);
+        if (section == 1)
         {
-            section1Enemys.Remove(gameObjectName);
+            if (index == 1)
+            {
+                sectionOne1Enemys.Remove(gameObjectName);
+            }
+            if (index == 2)
+            {
+                sectionOne2Enemys.Remove(gameObjectName);
+            }
         }
     }
 
     //第一关第index部分的敌人全部死了
-    public bool isSection1EnemyAllDied(int index)
+    public bool isSectionOneEnemyAllDied(int index)
     {
         if (index == 1)
         {
-            if (section1Enemys.Count == 0)
+            if (sectionOne1Enemys.Count == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (index == 2)
+        {
+            if (sectionOne2Enemys.Count == 0)
             {
                 return true;
             }
@@ -111,5 +206,9 @@ public class GameManager : MonoBehaviour
         }
         return false;
     }
-
+    //todo 雷神声音
+    //todo 游戏结束结算
+    //todo 首页教程
+    //todo 增加敌人机器人
+    //todo boss死亡时 时间减慢再恢复
 }

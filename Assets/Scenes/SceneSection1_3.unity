@@ -919,8 +919,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 123.55019, y: 24.278158, z: 1.4309335}
-  m_Center: {x: 38.627186, y: -4.5923996, z: -0.21546459}
+  m_Size: {x: 128.88895, y: 24.278158, z: 1.4309335}
+  m_Center: {x: 41.29657, y: -4.5923996, z: -0.21546459}
 --- !u!1 &676016780
 GameObject:
   m_ObjectHideFlags: 0
@@ -1529,7 +1529,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -87, y: 14.000007}
+  m_AnchoredPosition: {x: -107, y: 14.000007}
   m_SizeDelta: {x: 349.67456, y: 83.90997}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1661731933
@@ -1565,7 +1565,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u5F00\u53D1\u8005\uFF1ABiliBili \u8DEF\u8FB9\u5C0F\u8349"
+  m_Text: "\u5F00\u53D1\u8005\uFF1ABiliBili \u8DEF\u8FB9\u5C0F\u8349\u54C8"
 --- !u!222 &1661731934
 CanvasRenderer:
   m_ObjectHideFlags: 0

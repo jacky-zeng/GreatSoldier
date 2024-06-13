@@ -117,9 +117,21 @@ public class Player : MonoBehaviour
                 transformCamera.position = new Vector3(3, transformCamera.position.y, transformCamera.position.z);
                 break;
             case "SceneSection1_2":
+                //为了保持与上一个场景中的位置不变
+                transform.position = new Vector3(transform.position.x, transform.position.y, GameManager.instance.getPlayerPosZ() - 0.7f);
+                hitDamage = GameManager.instance.getPlayerHitDamage();
+                //血条改变
+                bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
+
                 transformCamera.position = new Vector3(-22.3f, transformCamera.position.y, transformCamera.position.z);
                 break;
             case "SceneSection1_3":
+                //为了保持与上一个场景中的位置不变
+                transform.position = new Vector3(transform.position.x, transform.position.y, GameManager.instance.getPlayerPosZ() + 27.83f);
+                hitDamage = GameManager.instance.getPlayerHitDamage();
+                //血条改变
+                bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
+
                 transformCamera.position = new Vector3(20, transformCamera.position.y, transformCamera.position.z);
                 break;
         }
@@ -291,25 +303,51 @@ public class Player : MonoBehaviour
             switch (sceneName)
             {
                 case "SceneSection1_1":
-                    if (transform.position.x >= 66 && GameManager.instance.isSection1EnemyAllDied(1))
+                    float playerPosX = transform.position.x;
+                    if (playerPosX >= 66 && GameManager.instance.isSectionOneEnemyAllDied(1))
                     {
+                        //保存一下当前player的Z轴位置（为了进入下一个场景时，player位置不变）
+                        GameManager.instance.setPlayerPosZ(transform.position.z);
+                        //保存一下当前player的hitDamage（为了进入下一个场景时，player的hitDamage不变）
+                        GameManager.instance.setPlayerHitDamage(hitDamage);
                         //清空对象池
                         ObjectPool.Instance.init();
                         //加载场景2
                         SceneManager.LoadScene("SceneSection1_2", LoadSceneMode.Single);
                     }
+                    else if(playerPosX >= 5.5f && playerPosX < 20) //敌人开始
+                    {
+                        GameManager.instance.sectionOneEnemyBegin(1, 3);
+                    }
+                    else if (playerPosX >= 39) //敌人开始
+                    {
+                        GameManager.instance.sectionOneEnemyBegin(1, 4);
+                    }
                     break;
                 case "SceneSection1_2":
-                    if (transform.position.x >= 31)
+                    if (transform.position.x >= 31 && GameManager.instance.isSectionOneEnemyAllDied(2))
                     {
+                        //保存一下当前player的Z轴位置（为了进入下一个场景时，player位置不变）
+                        GameManager.instance.setPlayerPosZ(transform.position.z);
+                        //保存一下当前player的hitDamage（为了进入下一个场景时，player的hitDamage不变）
+                        GameManager.instance.setPlayerHitDamage(hitDamage);
                         //清空对象池
                         ObjectPool.Instance.init();
                         //加载场景3
                         SceneManager.LoadScene("SceneSection1_3", LoadSceneMode.Single);
+                    } else
+                    {
+                        GameManager.instance.sectionOneEnemyBegin(2, 3);
+                    }
+                    break;
+                case "SceneSection1_3":
+                    if (transform.position.x >= 68)
+                    {
+                        //boss开始生效
+                        GameManager.instance.sectionOneBossBegin();
                     }
                     break;
             }
-
 
             //血条改变
             bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);

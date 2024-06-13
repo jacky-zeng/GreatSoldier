@@ -28,7 +28,9 @@ public class LeiShen : BaseEnemy
         //    bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
         //}
 
-        if(isBegin)
+
+
+        if (isBegin)
         {
             if (isDie)
             {
@@ -53,15 +55,11 @@ public class LeiShen : BaseEnemy
                     walk();
                 }
             }
-        } else
-        {
-            Invoke("begin", 5);
         }
-    }
-
-    private void begin()
-    {
-        isBegin = true;
+        else if (hitDamage > 0)  //leishen受伤后，才会开始攻击
+        {
+            isBegin = true;
+        }
     }
 
     #region 碰撞
@@ -83,6 +81,26 @@ public class LeiShen : BaseEnemy
         OnTriggerEnterOrStay(other, "Enter");
     }
     #endregion
+
+    public void animatorAttackEvent()
+    {
+        playAudio("Audios/Enemy/LeiShen/knifeAttack");
+    }
+
+    public void animatorAttack1Event()
+    {
+        playAudio("Audios/Enemy/LeiShen/girlKnifeAttack");
+    }
+
+    public void animatorJumpAttackEvent()
+    {
+        playAudio("Audios/Enemy/LeiShen/girlJumpAttack");
+    }
+
+    public void animatorJumpAttackGroundEvent()
+    {
+        playAudio("Audios/Enemy/LeiShen/knifeHitGround");
+    }
 
     //移动
     private void walk()

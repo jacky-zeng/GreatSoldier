@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class Ghost : BaseEnemy
 {
     private bool isBegin = false;
+    private bool isBeginReal = false;
+    private float beginRealAfterTime = 3.5f;
 
     private Vector3 targetPosition;
     private float walkMaxDuringTime = 3f;  //移动持续最大时间
@@ -32,7 +34,7 @@ public class Ghost : BaseEnemy
         //    bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
         //}
 
-        if(isBegin)
+        if(isBeginReal)
         {
             if (isDie)
             {
@@ -85,15 +87,21 @@ public class Ghost : BaseEnemy
                     }
                 }
             }
-        } else
-        {
-            Invoke("begin", 15);
         }
     }
 
-    private void begin()
+    public void begin()
     {
-        isBegin = true;
+        if(!isBegin)
+        {
+            isBegin = true;
+            Invoke("beginReal", beginRealAfterTime); //延时，为了player能够看到开始时的敌人动画
+        }
+    }
+
+    private void beginReal()
+    {
+        isBeginReal = true;
     }
 
     public void changeAnimatorStatus(int type)
@@ -104,6 +112,7 @@ public class Ghost : BaseEnemy
                 //使用默认动画xx
                 break;
             case 2:
+                beginRealAfterTime = 0.1f;
                 //使用walk动画
                 animator.SetBool("isWalk", true);
                 break;
@@ -184,7 +193,7 @@ public class Ghost : BaseEnemy
     private void die()
     {
         //调用管理器，设置敌人死亡
-        GameManager.instance.section1EnemyDied(int.Parse(gameObject.name.Split('_')[1]), gameObject.name);
+        GameManager.instance.sectionEnemyDied(gameObject.name);
 
         isBegin = false;
         isDie = true;
