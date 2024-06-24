@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 
     private string sceneName; //场景名称
     public GameObject prefabGhost;
+    public GameObject prefabKnife;
 
     private bool isOkSectionOne1 = false;
     private bool isOkSectionOne2 = false;
@@ -47,23 +48,37 @@ public class GameManager : MonoBehaviour
                 if (!isOkSectionOne1)
                 {
                     sectionOneLoad(1);
-                    Debug.Log("GameManager " + sceneName);
+                    //Debug.Log("GameManager " + sceneName);
                 }
                 break;
             case "SceneSection1_2":
                 if (!isOkSectionOne2)
                 {
                     sectionOneLoad(2);
-                    Debug.Log("GameManager " + sceneName);
+                    //Debug.Log("GameManager " + sceneName);
                 }
                 break;
             case "SceneSection1_3":
                 if (!isOkSectionOne3)
                 {
-                    Debug.Log("GameManager " + sceneName);
+                    //Debug.Log("GameManager " + sceneName);
                 }
                 break;
         }
+    }
+
+    public void init()
+    {
+        isOkSectionOne1 = false;
+        isOkSectionOne2 = false;
+        isOkSectionOne3 = false;
+
+        sectionOne1Enemys = new Dictionary<string, GameObject>();
+        sectionOne2Enemys = new Dictionary<string, GameObject>();
+        sectionOne3Enemys = new Dictionary<string, GameObject>();
+
+        //清空对象池
+        ObjectPool.Instance.init();
     }
 
     public float getPlayerPosZ()
@@ -99,19 +114,32 @@ public class GameManager : MonoBehaviour
             enemyAdd(index, "EnemyGhost#1|3", new Vector3(28.88f, 0.846f, -8.95f), 3);
 
             enemyAdd(index, "EnemyGhost#1|4", new Vector3(58.5f, 0.85f, -4.35f), 2);
+
+            enemyAdd(index, "EnemyKnife#1|5", new Vector3(58.5f, 0.85f, -4.35f), 2);
+            enemyAdd(index, "EnemyKnife#1|6", new Vector3(52.5f, 0.85f, -2.35f), 2);
         }
         else if (index == 2)
         {
             isOkSectionOne2 = true;
             enemyAdd(index, "EnemyGhost#1|1", new Vector3(-1.7f, 0.846f, -10.52f), 3);
+            enemyAdd(index, "EnemyKnife#1|2", new Vector3(8f, 0.846f, -8.52f), 3);
         }
     }
 
     private void enemyAdd(int index, string name, Vector3 pos, int animatorType)
     {
-        GameObject gameObjectInit = Instantiate(prefabGhost);
-        gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
-        gameObjectInit.GetComponent<Ghost>().changeAnimatorStatus(animatorType);
+        GameObject gameObjectInit = null;
+        if (name.StartsWith("EnemyGhost"))
+        {
+            gameObjectInit = Instantiate(prefabGhost);
+            gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
+            gameObjectInit.GetComponent<Ghost>().changeAnimatorStatus(animatorType);
+        } else if(name.StartsWith("EnemyKnife"))
+        {
+            gameObjectInit = Instantiate(prefabKnife);
+            gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
+        }
+        
         string gameObjectName = name + "_" + index.ToString();
         gameObjectInit.gameObject.name = gameObjectName;
         if (index == 1)
@@ -134,7 +162,14 @@ public class GameManager : MonoBehaviour
                 int enemy = int.Parse(sectionOne1Enemy.Key.Split("_")[0].Split("|")[1]);
                 if (enemy <= max)
                 {
-                    sectionOne1Enemy.Value.GetComponent<Ghost>().begin();
+                    if (sectionOne1Enemy.Key.StartsWith("EnemyGhost"))
+                    {
+                        sectionOne1Enemy.Value.GetComponent<Ghost>().begin();
+                    }
+                    else if (sectionOne1Enemy.Key.StartsWith("EnemyKnife"))
+                    {
+                        sectionOne1Enemy.Value.GetComponent<Knife>().begin();
+                    }
                 }
             }
         }
@@ -145,7 +180,14 @@ public class GameManager : MonoBehaviour
                 int enemy = int.Parse(sectionOne2Enemy.Key.Split("_")[0].Split("|")[1]);
                 if (enemy <= max)
                 {
-                    sectionOne2Enemy.Value.GetComponent<Ghost>().begin();
+                    if (sectionOne2Enemy.Key.StartsWith("EnemyGhost"))
+                    {
+                        sectionOne2Enemy.Value.GetComponent<Ghost>().begin();
+                    }
+                    else if (sectionOne2Enemy.Key.StartsWith("EnemyKnife"))
+                    {
+                        sectionOne2Enemy.Value.GetComponent<Knife>().begin();
+                    }
                 }
             }
         }
@@ -157,6 +199,7 @@ public class GameManager : MonoBehaviour
         GameObject boss = GameObject.Find("EnemyKun");
         if (boss != null)
         {
+            //boss.gameObject.GetComponent<Kun>().playAudio("Audios/Background/section1Boss");
             boss.gameObject.GetComponent<Kun>().begin();
         }
     }
@@ -164,7 +207,7 @@ public class GameManager : MonoBehaviour
     //第一关第index部分的敌人死了
     public void sectionEnemyDied(string gameObjectName)
     {
-        int section = int.Parse(gameObjectName.Split('|')[0].Split("#")[1]);
+        int section = int.Parse(gameObjectName.Split('|')[0].Split("#")[1]);  // EnemyGhost#1|1_1
         int index = int.Parse(gameObjectName.Split('_')[1]);
         if (section == 1)
         {
@@ -206,9 +249,4 @@ public class GameManager : MonoBehaviour
         }
         return false;
     }
-    //todo 雷神声音
-    //todo 游戏结束结算
-    //todo 首页教程
-    //todo 增加敌人机器人
-    //todo boss死亡时 时间减慢再恢复
 }

@@ -120,7 +120,7 @@ public class BaseEnemy : MonoBehaviour
             rigi.velocity = Vector2.zero;
             stopUpHit(true);
             isHitOnGround = true;
-            Log("进入地面Ground OnCollisionEnter", true);
+            //Log("进入地面Ground OnCollisionEnter", true);
         }
         //敌人碰撞体与地面垂直
         CapCollider.direction = 1;
@@ -147,27 +147,43 @@ public class BaseEnemy : MonoBehaviour
             {
                 isChange = tempAnimatorClipName.fullPathHash == animatorClipName.fullPathHash ? false : true;
             }
-            
-            animatorClipName = tempAnimatorClipName;
+
             var tempDirection = new Vector2(player.GetComponent<SpriteRenderer>().flipX ? -1 : 1, 1);
+
+            //敌人失血过多倒地
+            if (isChange && hitDamage != 1 && (int)(hitDamage - 1) % 8 == 0)
+            {
+                //禁用敌人碰撞体
+                CapCollider.enabled = false;
+
+                //使敌人倒地
+                isJumpHit = true;
+                byJumpHit(tempDirection, true);
+                //Debug.Log("***hitDamage***byJumpHit!!!" + " isJumpHit=" + isJumpHit);
+                Invoke("cancelStatus", 3.5f);
+                return;
+            }
+
+            animatorClipName = tempAnimatorClipName;
+            
             if (tempAnimatorClipName.IsName("attackUp1"))
             {
-                Debug.Log("attackUp1****");
+                //Debug.Log("attackUp1****");
                 upHit(tempDirection, false, isChange);
             }
             else if (tempAnimatorClipName.IsName("attackUp2"))
             {
-                Debug.Log("attackUp2****");
+                //Debug.Log("attackUp2****");
                 upHit(tempDirection, false, isChange);
             }
             else if (tempAnimatorClipName.IsName("attackUp3"))
             {
-                Debug.Log("attackUp3****");
+                //Debug.Log("attackUp3****");
                 upHit(tempDirection, true, isChange);
             }
             else if (tempAnimatorClipName.IsName("attackNormal4"))
             {
-                Debug.Log("attackNormal4****");
+                //Debug.Log("attackNormal4****");
                 hit(tempDirection, isChange, 2);
             }
             else if (tempAnimatorClipName.IsName("attackFly"))
@@ -175,9 +191,19 @@ public class BaseEnemy : MonoBehaviour
                 if (!isJumpHit)
                 {
                     isJumpHit = true;
-                    Debug.Log("attackFly****");
+                    //Debug.Log("attackFly****");
                     byFlyHit(tempDirection);
                     Invoke("cancelStatus", 0.3f);
+                }
+            }
+            else if(tempAnimatorClipName.IsName("circleAttack"))
+            {
+                if (!isJumpHit)
+                {
+                    isJumpHit = true;
+                    byJumpHit(tempDirection);
+                    //Debug.Log("byCircleAttackHit****");
+                    Invoke("cancelStatus", 3.5f);
                 }
             }
             else
@@ -192,7 +218,7 @@ public class BaseEnemy : MonoBehaviour
                 isJumpHit = true;
                 var tempDirection = new Vector2(player.GetComponent<SpriteRenderer>().flipX ? -1 : 1, 1);
                 byJumpHit(tempDirection);
-                Debug.Log("******byJumpHit!!!" + " isJumpHit=" + isJumpHit);
+                //Debug.Log("******byJumpHit!!!" + " isJumpHit=" + isJumpHit);
                 Invoke("cancelStatus", 3.5f);
             }
         }
@@ -205,22 +231,24 @@ public class BaseEnemy : MonoBehaviour
     {
         if (isJumpHit || isHitOnGround)
         {
-            Debug.Log("******cancelJumpHit isJumpHit=" + isJumpHit);
+            //Debug.Log("******cancelJumpHit isJumpHit=" + isJumpHit);
             animatorHitStandUpEvent();
         }
     }
 
-    //死亡动画事件
-    public void animatorDieEvent()
+    //死亡
+    public void dieDestroy()
     {
-        animator.enabled = false;
-        Destroy(gameObject, 0.5f);
+        CapCollider.enabled = false;
+        Time.timeScale = 1;
+        Destroy(gameObject, 1.2f);
     }
 
     #region 受击
     //受击
     public void byHit()
     {
+        stopWalk();
         hitDuringTime += Time.deltaTime;
         if (isHit)
         {
@@ -238,6 +266,7 @@ public class BaseEnemy : MonoBehaviour
     //受击(上挑)
     public void byUpHit()
     {
+        stopWalk();
         upHitDuringTime += Time.deltaTime;
         upHitAngleDuringTime += Time.deltaTime;
         if (upHitAngleDuringTime >= upHitAngleMaxDuringTime) //超时未攻击 敌人恢复
@@ -248,7 +277,7 @@ public class BaseEnemy : MonoBehaviour
             rigi.velocity = Vector2.zero;
             stopUpHit();
             isHitOnGround = false;
-            Log("伤害退出 超时 byUpHit", true);
+            //Log("伤害退出 超时 byUpHit", true);
         }
         else if (isAttackUp3 && isOnGround)
         {
@@ -269,7 +298,7 @@ public class BaseEnemy : MonoBehaviour
             isOnGround = false;
             angleCount = 0;
 
-            Log("isAttackUp3 = true  ==byUpHit==", true);
+            //Log("isAttackUp3 = true  ==byUpHit==", true);
         }
         else if (angleCount <= 5 && !isOnGround && upHitDuringTime >= upHitMaxDuringTime)
         {
@@ -280,18 +309,27 @@ public class BaseEnemy : MonoBehaviour
     }
 
     //被跳起来踢飞
-    public void byJumpHit(Vector2 direction)
+    public void byJumpHit(Vector2 direction, bool isOverHit = false)
     {
+        stopWalk();
         stopHit();
         this.direction = direction;
         animator.SetTrigger("triggerJumpHit");
-        rigi.AddForce(new Vector3(direction.x > 0 ? JumpHitForce : -JumpHitForce, 0, 0), ForceMode.Impulse);
-        hit2Style();
+
+        if(isOverHit)
+        {
+            hitStyle(true);
+        } else
+        {
+            rigi.AddForce(new Vector3(direction.x > 0 ? JumpHitForce : -JumpHitForce, 0, 0), ForceMode.Impulse);
+            hit2Style();
+        }
     }
 
     //被起飞向上击飞
     public void byFlyHit(Vector2 direction)
     {
+        stopWalk();
         stopHit();
         this.direction = direction;
         animator.SetTrigger("triggerJumpHit");
@@ -342,7 +380,7 @@ public class BaseEnemy : MonoBehaviour
             changeHitDamage();
             //Debug.Log("受到伤害" + hitDamage);
             ObjectPool.Instance.Get(hitObj, hitPoint.transform.position, Vector3.zero, true).GetComponent<Hit>()
-            .setFollowTransform(transform)
+            .setFollowTransform(hitPoint.transform)
             .setDie();
         }
     }
@@ -353,7 +391,7 @@ public class BaseEnemy : MonoBehaviour
         changeHitDamage();
         //Debug.Log("受到伤害" + hitDamage);
         ObjectPool.Instance.Get(hit2Obj, hitPoint.transform.position, Vector3.zero, true).GetComponent<Hit2>()
-            .setFollowTransform(transform)
+            .setFollowTransform(hitPoint.transform)
             .setDie();
     }
 
@@ -400,7 +438,7 @@ public class BaseEnemy : MonoBehaviour
         //显示当前敌人血条
         bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
         //修改头像显示
-        enemyAvatar.sprite = enemyAvatarSprite;  
+        enemyAvatar.sprite = enemyAvatarSprite;
     }
 
     public void stopHit()
@@ -421,7 +459,7 @@ public class BaseEnemy : MonoBehaviour
         if(isHitToGround)
         {
             changeHitDamage(2);
-            Debug.Log("砸地上，受到伤害" + hitDamage);
+            //Debug.Log("砸地上，受到伤害" + hitDamage);
             playAudio("Audios/Tool/hitToGround");
         }
         if(isUpHit)
@@ -454,7 +492,7 @@ public class BaseEnemy : MonoBehaviour
         
         isJumpHit = false;
         isHitOnGround = false;
-        Debug.Log("***爬起动画结束 isJumpHit=" + isJumpHit);
+        //Debug.Log("***爬起动画结束 isJumpHit=" + isJumpHit);
     }
 
     public void stopAttack()

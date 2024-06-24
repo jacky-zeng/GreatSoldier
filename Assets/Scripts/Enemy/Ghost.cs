@@ -161,7 +161,10 @@ public class Ghost : BaseEnemy
             isHitOnGround = false;
             animator.SetBool("isWalk", true);
         }
-        else
+
+        AnimatorStateInfo tempAnimatorClipName = GetComponent<Animator>().GetCurrentAnimatorStateInfo(0);
+
+        if (tempAnimatorClipName.IsName("walk")) //不能用animator.GetBool("isWalk")判断，因为虽然设置了isWalk，但是上一个动画有exitTime
         {
             // 计算移动的方向和距离
             Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
@@ -208,6 +211,7 @@ public class Ghost : BaseEnemy
         ////敌人摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
         animator.SetTrigger("triggerDie");
-       
+
+        dieDestroy();
     }
 }

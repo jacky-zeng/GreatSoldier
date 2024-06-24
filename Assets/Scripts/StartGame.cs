@@ -23,6 +23,7 @@ public class StartGame : MonoBehaviour
     {
         MusicManager.instance.playAudio("Audios/Background/start");
         initBg();
+        GameManager.instance.init();
     }
 
     // Update is called once per frame
@@ -41,7 +42,7 @@ public class StartGame : MonoBehaviour
                 changeP();
             }
 
-            if (!isBegin && Input.GetKeyDown(KeyCode.Return))
+            if (!isBegin && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.J)))
             {
                 begin();
             }

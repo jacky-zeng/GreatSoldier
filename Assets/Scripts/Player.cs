@@ -15,6 +15,9 @@ public class Player : MonoBehaviour
     private bool isOnGround = false;
     public float timeRate = 0.3f;
 
+    public GameObject CanvasContinue;
+    public GameObject canvasTimer;
+
     private AudioSource audioSource;
 
     //相机移动方向 -1向左 0静止 1向右
@@ -42,6 +45,9 @@ public class Player : MonoBehaviour
     private float attackMaxDuringTime = 0.5f;  //攻击持续最大时间
     private float attackDuringTime = 0;        //攻击已持续时间
 
+    //放血攻击
+    private bool isAttackCircle = false;
+
     //上挑攻击
     private bool isAttackUp = false;             //是否正在攻击
     private int attackUpStep = 0;                //在哪一个攻击连招
@@ -66,7 +72,7 @@ public class Player : MonoBehaviour
     //受到了几次伤害
     private float hitDamage = 0;
     //总血量
-    public float maxBlood = 10;
+    public float maxBlood = 5;
     private bool isHit = false;
     private bool isHitHeavy = false;
     private bool isHitJump = false;
@@ -114,6 +120,8 @@ public class Player : MonoBehaviour
         {
             case "SceneSection1_1":
                 MusicManager.instance.playAudio("Audios/Background/section1Begin");
+                //血条改变
+                bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
                 transformCamera.position = new Vector3(3, transformCamera.position.y, transformCamera.position.z);
                 break;
             case "SceneSection1_2":
@@ -321,7 +329,7 @@ public class Player : MonoBehaviour
                     }
                     else if (playerPosX >= 39) //敌人开始
                     {
-                        GameManager.instance.sectionOneEnemyBegin(1, 4);
+                        GameManager.instance.sectionOneEnemyBegin(1, 6);
                     }
                     break;
                 case "SceneSection1_2":
@@ -350,11 +358,25 @@ public class Player : MonoBehaviour
             }
 
             //血条改变
-            bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
-
+            bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
+            //bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
+            //Debug.Log("hitDamage=" + hitDamage + "maxBlood=" + maxBlood + " rs="+ (maxBlood - hitDamage) / maxBlood);
             if (isDie)
             {
-                //已死亡 todo 结束游戏界面
+                //已死亡
+                if ((Input.GetKey(KeyCode.J) || Input.GetKey(KeyCode.K)) && (canvasTimer.GetComponent<Timer>()).timeLeft < 18)
+                {
+                    //隐藏倒计时界面
+                    CanvasContinue.SetActive(false);
+                    (canvasTimer.GetComponent<Timer>()).end();
+                    canvasTimer.SetActive(false);
+                    //恢复player
+                    transform.position = new Vector3(transform.position.x, transform.position.y + 10, transform.position.z);
+                    hitDamage = 0;
+                    GameManager.instance.setPlayerHitDamage(0);
+                    bloodBar.fillAmount = 1;
+                    isDie = false;
+                }
             }
             else if (hitDamage >= maxBlood) //死亡
             {
@@ -369,7 +391,7 @@ public class Player : MonoBehaviour
                         unmatchedSecond -= Time.deltaTime;
                         if (unmatchedSecond <= 0)
                         {
-                            Log("无敌已过" + Time.deltaTime);
+                            //Log("无敌已过" + Time.deltaTime);
                             isUnmatched = false;
                         }
                     }
@@ -411,8 +433,13 @@ public class Player : MonoBehaviour
             horizontal = 0;
         }
 
-        bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0);
-        if (isOnGround == true && isHitHeavy == false && isHitJump == false) //在地面上
+        bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.J);
+        bool isButtonAttackCircle = Input.GetKey(KeyCode.J) && Input.GetKey(KeyCode.K);
+        if(isButtonAttackCircle || isAttackCircle)
+        {
+            attackCircle();
+        }
+        else if (isOnGround == true && isHitHeavy == false && isHitJump == false) //在地面上
         {
             bool tempIsAttackFly = false;
             attackFlyDuringTime += Time.deltaTime;
@@ -641,6 +668,45 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void attackCircle()
+    {
+        if(isDie)
+        {
+            return;
+        }
+        if (!isAttackCircle)
+        {
+            isAttackCircle = true;
+
+            //放血攻击会扣血
+            hitDamage += 2;
+
+            stopWalkAndStand();
+            stopAttackFly();
+            stopJumpAttack();
+            stopAttackUp();
+
+            //使攻击的武器朝向和player保持一致
+            attackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
+
+            animator.SetBool("isAttackCircle", isAttackCircle);
+
+            //1秒后，结束放血攻击
+            Invoke("stopAttackCircle", 1f);
+        }
+        attackDirectionDuringTime += Time.deltaTime;
+        if (attackDirectionDuringTime >= attackDirectionMaxDuringTime / 3)  //间隔时间attackDirectionMaxDuringTime下，可改变player攻击的方向
+        {
+            attackDirectionDuringTime = 0;
+            //改变player攻击的方向,使用户和地面只有水平方向的速度,并且使速度/3
+            if (horizontal != 0)
+            {
+                spriteRenderer.flipX = (horizontal > 0 ? false : true);
+            }
+            rigiBody.velocity = new Vector3(horizontal * moveSpeed / 3, 0, 0);
+        }
+    }
+
     private void attackUp(bool isGetMouseButtonDown0)
     {
         stopWalkAndStand();
@@ -679,7 +745,7 @@ public class Player : MonoBehaviour
         attackUpDuringTime += Time.deltaTime;
         if (attackUpDuringTime > attackUpMaxDuringTime)     //攻击持续时间不足
         {
-            Log(" Up攻击结束：" + attackUpDuringTime + " 已持续攻击的时间：" + attackUpDuringTime + " attackUpStep=" + attackUpStep, true);
+            //Log(" Up攻击结束：" + attackUpDuringTime + " 已持续攻击的时间：" + attackUpDuringTime + " attackUpStep=" + attackUpStep, true);
             isAttackUp = false;
             attackUpStep = 0;
             animator.SetInteger("attackUpStep", attackUpStep);
@@ -750,6 +816,15 @@ public class Player : MonoBehaviour
         //跳跃动画 (暂无)
     }
 
+    private void stopAttackCircle()
+    {
+        if (isAttackCircle)
+        {
+            isAttackCircle = false;
+            animator.SetBool("isAttackCircle", isAttackCircle);
+        }
+    }
+
     private void stopWalkAndStand()
     {
         animator.SetBool("isWalk", false);
@@ -799,7 +874,7 @@ public class Player : MonoBehaviour
 
             stopJumpAttack();
             stopAttackFly();
-            Log("进入地面Ground OnCollisionEnter", true);
+            //Log("进入地面Ground OnCollisionEnter", true);
         }
     }
 
@@ -812,7 +887,7 @@ public class Player : MonoBehaviour
 
             stopJumpAttack();
             stopAttackFly();
-            Log("待在地面Ground OnCollisionStay", true);
+            //Log("待在地面Ground OnCollisionStay", true);
         }
     }
 
@@ -822,7 +897,7 @@ public class Player : MonoBehaviour
         if (isOnGround == true && collision.transform.tag == "Ground")
         {
             isOnGround = false;
-            Log("离开地面 Ground OnCollisionExit");
+            //Log("离开地面 Ground OnCollisionExit");
         }
     }
 
@@ -839,7 +914,7 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnterOrStay(Collider collision, string type)
     {
-        if (collision.gameObject.name == "EnemyAttack") //收到敌人攻击
+        if (!isDie && collision.gameObject.name == "EnemyAttack") //受到敌人攻击
         {
             bool directionHit = collision.transform.parent.position.x > transform.position.x ? true : false;
             if (collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackHeavy"))
@@ -857,7 +932,6 @@ public class Player : MonoBehaviour
 
                 hit(directionHit);
             }
-
         }
     }
 
@@ -868,7 +942,7 @@ public class Player : MonoBehaviour
     {
         //hit2Style();
 
-        if (!isHit)
+        if (!isHit && !isAttackCircle)
         {
             isHit = true;
             ++hitDamage;
@@ -882,7 +956,7 @@ public class Player : MonoBehaviour
     //受到重击伤害
     public void hitHeavy(bool directionHit)
     {
-        if (!isHitHeavy)
+        if (!isHitHeavy && !isAttackCircle)
         {
             isHitHeavy = true;
             hitDamage += 2;
@@ -896,7 +970,7 @@ public class Player : MonoBehaviour
     //受到跳起来的下砸伤害
     public void hitJump(bool directionHit)
     {
-        if (!isHitJump)
+        if (!isHitJump && !isAttackCircle)
         {
             isHitJump = true;
             hitDamage += 3;
@@ -932,7 +1006,29 @@ public class Player : MonoBehaviour
 
     private void die()
     {
-        isDie = true;
+        if(!isDie)
+        {
+            isDie = true;
+
+            //慢放
+            Time.timeScale = 0.3f;
+
+            animator.SetBool("isDie", true);
+            (canvasTimer.GetComponent<Timer>()).timeLeft = 19;
+            playAudio("Audios/Tool/manHit");
+        }
+    }
+
+    //播放完死亡动画后，调用该方法
+    public void animatorDieEvent()
+    {
+        Time.timeScale = 1;
+        //显示倒计时界面
+        CanvasContinue.SetActive(true);
+        canvasTimer.SetActive(true);
+        (canvasTimer.GetComponent<Timer>()).begin(19);
+
+        animator.SetBool("isDie", false);
     }
 
     public void playAudio(string fileName)
