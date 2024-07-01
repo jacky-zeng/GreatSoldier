@@ -15,8 +15,8 @@ public class Player : MonoBehaviour
     private bool isOnGround = false;
     public float timeRate = 0.3f;
 
-    public GameObject CanvasContinue;
-    public GameObject canvasTimer;
+    private GameObject canvasContinue;
+    private GameObject canvasTimer;
 
     private AudioSource audioSource;
 
@@ -77,7 +77,7 @@ public class Player : MonoBehaviour
     private bool isHitHeavy = false;
     private bool isHitJump = false;
     //血条
-    public Image bloodBar;
+    private Image bloodBar;
 
     //相机
     private Transform transformCamera;
@@ -88,7 +88,7 @@ public class Player : MonoBehaviour
 
     private bool isCameraActionEnd = false; //是否运镜结束
 
-    public GameObject mapStage1;
+    private GameObject mapStage;
 
     #endregion
 
@@ -101,7 +101,7 @@ public class Player : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         rigiBody = GetComponent<Rigidbody>();
 
-        sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        sceneName = SceneManager.GetActiveScene().name;
 
         transformCamera = Camera.main.transform;
         transformCameraY = transformCamera.position.y;
@@ -116,6 +116,8 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        init();
+
         switch (sceneName)
         {
             case "SceneSection1_1":
@@ -142,7 +144,32 @@ public class Player : MonoBehaviour
 
                 transformCamera.position = new Vector3(20, transformCamera.position.y, transformCamera.position.z);
                 break;
+            case "SceneSection2_1":
+                MusicManager.instance.playAudio("Audios/Background/section2Bg", true);
+                hitDamage = GameManager.instance.getPlayerHitDamage();
+                //血条改变
+                bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
+                transformCamera.position = new Vector3(-5.5f, transformCamera.position.y, transformCamera.position.z);
+                break;
         }
+    }
+
+    public void init()
+    {
+        canvasContinue = CanvasContinue.instance.gameObject;
+        canvasTimer = CanvasTimer.instance.gameObject;
+
+        bloodBar = GameObject.Find("Canvas").transform.Find("PlayerHeath")
+            .transform.Find("PlayerHealthBg").transform.Find("bloodBar").GetComponent<Image>();
+        mapStage = GameObject.Find("mapStage");
+        
+        canvasContinue.SetActive(false);
+        canvasTimer.SetActive(false);
+
+        GameObject.Find("Canvas").transform.Find("PlayerHeath")
+            .GetComponent<Image>().sprite = Resources.Load<Sprite>("Images/Player/blood_1p") as Sprite;
+
+        Debug.Log((canvasContinue == null ? "canvasContinue is null" : " canvasContinue") + (bloodBar == null ? "bloodBar is null" : " bloodBar") + (mapStage == null ? "mapStage is null" : " mapStage"));
     }
     #endregion
 
@@ -156,6 +183,7 @@ public class Player : MonoBehaviour
             float posX = transform.position.x;
             float posY = transformCameraY;
 
+            //控制相机在一定范围内
             if (sceneName == "SceneSection1_1")
             {
                 if (transform.position.x <= 3)
@@ -196,6 +224,17 @@ public class Player : MonoBehaviour
                 else if (transform.position.x >= 83.2)
                 {
                     posX = 83.2f;
+                }
+            }
+            else if (sceneName == "SceneSection2_1")
+            {
+                if (transform.position.x <= -5.5f)
+                {
+                    posX = -5.5f;
+                }
+                else if (transform.position.x >= 72.5f)
+                {
+                    posX = 72.5f;
                 }
             }
 
@@ -251,7 +290,7 @@ public class Player : MonoBehaviour
                         isCameraActionEnd = true;
                         transformCameraY = 14.8f;
                         MusicManager.instance.playAudio("Audios/Background/bg", true);
-                        mapStage1.GetComponent<mapStage>().begin();
+                        mapStage.GetComponent<mapStage>().begin();
                     }
                     else
                     {
@@ -304,6 +343,10 @@ public class Player : MonoBehaviour
                         transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
                     }
                     break;
+                case "SceneSection2_1":
+                    isCameraActionEnd = true;
+                    mapStage.GetComponent<mapStage>().begin();
+                    break;
             }
         }
         else
@@ -333,7 +376,7 @@ public class Player : MonoBehaviour
                     }
                     break;
                 case "SceneSection1_2":
-                    if (transform.position.x >= 31 && GameManager.instance.isSectionOneEnemyAllDied(2))
+                    if (transform.position.x >= 31 && GameManager.instance.isSectionOneEnemyAllDied(2) && GameObject.Find("EnemyLeiShen") == null)
                     {
                         //保存一下当前player的Z轴位置（为了进入下一个场景时，player位置不变）
                         GameManager.instance.setPlayerPosZ(transform.position.z);
@@ -341,6 +384,7 @@ public class Player : MonoBehaviour
                         GameManager.instance.setPlayerHitDamage(hitDamage);
                         //清空对象池
                         ObjectPool.Instance.init();
+
                         //加载场景3
                         SceneManager.LoadScene("SceneSection1_3", LoadSceneMode.Single);
                     } else
@@ -355,6 +399,21 @@ public class Player : MonoBehaviour
                         GameManager.instance.sectionOneBossBegin();
                     }
                     break;
+                case "SceneSection2_1":
+                    if (transform.position.x >= 100)
+                    {
+                        //保存一下当前player的hitDamage（为了进入下一个场景时，player的hitDamage不变）
+                        GameManager.instance.setPlayerHitDamage(hitDamage);
+                        //清空对象池
+                        ObjectPool.Instance.init();
+                        //加载场景2
+                        SceneManager.LoadScene("SceneSection2_2", LoadSceneMode.Single);
+                    }
+                    else
+                    {
+                        GameManager.instance.sectionTwoEnemyBegin(1, 5);
+                    }
+                    break;
             }
 
             //血条改变
@@ -364,11 +423,11 @@ public class Player : MonoBehaviour
             if (isDie)
             {
                 //已死亡
-                if ((Input.GetKey(KeyCode.J) || Input.GetKey(KeyCode.K)) && (canvasTimer.GetComponent<Timer>()).timeLeft < 18)
+                if ((Input.GetKey(KeyCode.J) || Input.GetKey(KeyCode.K)) && (canvasTimer.GetComponent<CanvasTimer>()).timeLeft < 18)
                 {
                     //隐藏倒计时界面
-                    CanvasContinue.SetActive(false);
-                    (canvasTimer.GetComponent<Timer>()).end();
+                    canvasContinue.SetActive(false);
+                    (canvasTimer.GetComponent<CanvasTimer>()).end();
                     canvasTimer.SetActive(false);
                     //恢复player
                     transform.position = new Vector3(transform.position.x, transform.position.y + 10, transform.position.z);
@@ -435,7 +494,7 @@ public class Player : MonoBehaviour
 
         bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.J);
         bool isButtonAttackCircle = Input.GetKey(KeyCode.J) && Input.GetKey(KeyCode.K);
-        if(isButtonAttackCircle || isAttackCircle)
+        if((isButtonAttackCircle || isAttackCircle) && (hitDamage + 2) < maxBlood)
         {
             attackCircle();
         }
@@ -627,7 +686,7 @@ public class Player : MonoBehaviour
 
             if (attackDuringTime > 0) //只要不停按攻击，就延长攻击持续时间
             {
-                attackDuringTime -= 0.25f;
+                attackDuringTime -= 0.3f;
             }
             else if (attackDuringTime < 0)
             {
@@ -638,7 +697,7 @@ public class Player : MonoBehaviour
         attackDuringTime += Time.deltaTime;
         if (attackDuringTime > attackMaxDuringTime)     //攻击持续时间不足
         {
-            //Log(" 攻击结束：" + attackDuringTime + " 已持续攻击的时间：" + attackDuringTime + " attackStep=" + attackStep);
+            //Log(" 攻击结束：" + attackDuringTime + " 已持续攻击的时间：" + attackDuringTime + " attackStep=" + attackStep, true);
             isAttack = false;
             attackStep = 0;
             animator.SetInteger("attackStep", attackStep);
@@ -1014,7 +1073,7 @@ public class Player : MonoBehaviour
             Time.timeScale = 0.3f;
 
             animator.SetBool("isDie", true);
-            (canvasTimer.GetComponent<Timer>()).timeLeft = 19;
+            (canvasTimer.GetComponent<CanvasTimer>()).timeLeft = 19;
             playAudio("Audios/Tool/manHit");
         }
     }
@@ -1024,9 +1083,9 @@ public class Player : MonoBehaviour
     {
         Time.timeScale = 1;
         //显示倒计时界面
-        CanvasContinue.SetActive(true);
+        canvasContinue.SetActive(true);
         canvasTimer.SetActive(true);
-        (canvasTimer.GetComponent<Timer>()).begin(19);
+        (canvasTimer.GetComponent<CanvasTimer>()).begin(19);
 
         animator.SetBool("isDie", false);
     }

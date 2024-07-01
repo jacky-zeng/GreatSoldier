@@ -7,6 +7,9 @@ public class LeiShen : BaseEnemy
 {
     private bool isBegin = false;
 
+    //移动速度放大
+    private float moveSpeedEx = 1.5f;
+
     private void Awake()
     {
         BaseAwake();
@@ -15,6 +18,8 @@ public class LeiShen : BaseEnemy
     #region 初始化
     void Start()
     {
+        player = GameObject.Find("Player");
+
         enemyAvatarSprite = Resources.Load<Sprite>("Images/Enemy/LeiShen/enemyAvatar") as Sprite;
     }
     #endregion
@@ -27,8 +32,6 @@ public class LeiShen : BaseEnemy
         //    //血条改变
         //    bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
         //}
-
-
 
         if (isBegin)
         {
@@ -58,6 +61,10 @@ public class LeiShen : BaseEnemy
         }
         else if (hitDamage > 0)  //leishen受伤后，才会开始攻击
         {
+            if (player == null)
+            {
+                player = GameObject.Find("Player");
+            }
             isBegin = true;
         }
     }
@@ -148,7 +155,7 @@ public class LeiShen : BaseEnemy
                 {
                     // 计算移动的方向和距离
                     Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-                    Vector3 moveDirection = directionToTarget * moveSpeed * Time.deltaTime;
+                    Vector3 moveDirection = directionToTarget * moveSpeed * moveSpeedEx * Time.deltaTime;
 
                     //Debug.Log("移动物体 靠近Player");
                     // 移动物体

@@ -7,7 +7,7 @@ public class BaseEnemy : MonoBehaviour
 {
     #region 变量定义
     [HideInInspector]
-    public GameObject player;
+    public GameObject player = null;
 
     public GameObject hitPoint;
     public GameObject hitObj;
@@ -28,6 +28,9 @@ public class BaseEnemy : MonoBehaviour
     public int JumpHitForce = 260;
     public int flyHitForce = 20;
     public float upPosSpeed = 3;          //被上挑时的离心距离
+
+    [HideInInspector]
+    public int byAttackType = 1;         //被攻击的类型 1-普通 2-被刀攻击
 
     //上挑时的吸附
     public Vector3 xiFuLeft = new Vector3(2.5f, 1.5f, 0);
@@ -100,7 +103,6 @@ public class BaseEnemy : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
         CapCollider = GetComponent<CapsuleCollider>();
-        player = GameObject.Find("Player");
         enemyHealthObj = GameObject.Find("Canvas").transform.Find("EnemyHealth").gameObject;
 
         enemyAvatar = GameObject.Find("Canvas").transform.Find("EnemyHealth").GetComponent<Image>();
@@ -132,9 +134,21 @@ public class BaseEnemy : MonoBehaviour
         {
             return;
         }
-        //Debug.Log("EnterOrStay!!!" + other.gameObject.name + "isJumpHit = " + isJumpHit);
-        if (other.gameObject.name == "Attack")
+        if(player == null)
         {
+            player = GameObject.Find("Player");
+        }
+        string otherGameObjectName = other.gameObject.name;
+        //Debug.Log("EnterOrStay!!!" + other.gameObject.name + "isJumpHit = " + isJumpHit);
+        if (otherGameObjectName == "Attack" || otherGameObjectName == "AttackKnife")
+        {
+            if(otherGameObjectName == "AttackKnife")
+            {
+                byAttackType = 2;
+            } else
+            {
+                byAttackType = 1;
+            }
             AnimatorStateInfo tempAnimatorClipName = player.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0);
             bool isChange = false;
           
@@ -151,7 +165,7 @@ public class BaseEnemy : MonoBehaviour
             var tempDirection = new Vector2(player.GetComponent<SpriteRenderer>().flipX ? -1 : 1, 1);
 
             //敌人失血过多倒地
-            if (isChange && hitDamage != 1 && (int)(hitDamage - 1) % 8 == 0)
+            if (isChange && hitDamage != 1 && (int)(hitDamage - 1) % 8 == 0 && Random.Range(1,5) == 3)
             {
                 //禁用敌人碰撞体
                 CapCollider.enabled = false;
@@ -181,7 +195,7 @@ public class BaseEnemy : MonoBehaviour
                 //Debug.Log("attackUp3****");
                 upHit(tempDirection, true, isChange);
             }
-            else if (tempAnimatorClipName.IsName("attackNormal4"))
+            else if (byAttackType == 1 && tempAnimatorClipName.IsName("attackNormal4"))
             {
                 //Debug.Log("attackNormal4****");
                 hit(tempDirection, isChange, 2);
@@ -211,9 +225,10 @@ public class BaseEnemy : MonoBehaviour
                 //Debug.Log("attackNormal****");
                 hit(tempDirection, isChange);
             }
-        } else if(other.gameObject.name == "jumpAttack")
+        } else if(otherGameObjectName == "jumpAttack")
         {
-            if(!isJumpHit)
+            byAttackType = 1;
+            if (!isJumpHit)
             {
                 isJumpHit = true;
                 var tempDirection = new Vector2(player.GetComponent<SpriteRenderer>().flipX ? -1 : 1, 1);
@@ -242,6 +257,12 @@ public class BaseEnemy : MonoBehaviour
         CapCollider.enabled = false;
         Time.timeScale = 1;
         Destroy(gameObject, 1.2f);
+    }
+
+    //死亡(禁用动画)
+    public void animatorDieEvent()
+    {
+        animator.enabled = false;
     }
 
     #region 受击
@@ -488,11 +509,16 @@ public class BaseEnemy : MonoBehaviour
     public void animatorHitStandUpEvent()
     {
         //启用敌人碰撞体
-        CapCollider.enabled = true;
+        Invoke("colliderEnabled", 0.39f);
         
         isJumpHit = false;
         isHitOnGround = false;
         //Debug.Log("***爬起动画结束 isJumpHit=" + isJumpHit);
+    }
+
+    private void colliderEnabled()
+    {
+        CapCollider.enabled = true;
     }
 
     public void stopAttack()

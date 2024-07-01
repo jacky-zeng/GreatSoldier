@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Kun : BaseEnemy
@@ -21,6 +22,7 @@ public class Kun : BaseEnemy
     #region 初始化
     void Start()
     {
+        player = GameObject.Find("Player");
         moveSpeed = 6;
         //因为Kun这个敌人更大，需要改变上挑吸附距离
         xiFuLeft = new Vector3(5f, 3f, 0);
@@ -116,6 +118,10 @@ public class Kun : BaseEnemy
 
     private void beginReal()
     {
+        if (player == null)
+        {
+            player = GameObject.Find("Player");
+        }
         isBeginReal = true;
         playAudio("Audios/Enemy/Kun/jntm");
     }
@@ -223,5 +229,8 @@ public class Kun : BaseEnemy
         dieDestroy();
         playAudio("Audios/Enemy/Kun/die");
         MusicManager.instance.playAudio("Audios/Background/section1End");
+
+        GameManager.instance.nextSection("SceneSection2_1");
     }
+   
 }

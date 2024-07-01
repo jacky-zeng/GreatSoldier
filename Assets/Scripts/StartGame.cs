@@ -21,6 +21,10 @@ public class StartGame : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        CanvasContinue.instance.gameObject.SetActive(false);
+        CanvasTimer.instance.gameObject.SetActive(false);
+
+
         MusicManager.instance.playAudio("Audios/Background/start");
         initBg();
         GameManager.instance.init();
@@ -64,6 +68,7 @@ public class StartGame : MonoBehaviour
         }
     }
 
+    //选角色
     private void changeP()
     {
         if (pIndex <= 0)
@@ -88,12 +93,14 @@ public class StartGame : MonoBehaviour
                 p1Obj.SetActive(false);
                 p2Obj.SetActive(true);
                 p3Obj.SetActive(false);
-                p4Obj.SetActive(false); break;
+                p4Obj.SetActive(false);
+                break;
             case 3:
                 p1Obj.SetActive(false);
                 p2Obj.SetActive(false);
                 p3Obj.SetActive(true);
-                p4Obj.SetActive(false); break;
+                p4Obj.SetActive(false);
+                break;
             case 4:
                 p1Obj.SetActive(false);
                 p2Obj.SetActive(false);
@@ -105,8 +112,9 @@ public class StartGame : MonoBehaviour
 
     private void begin()
     {
-        if (pIndex == 1)
+        if (pIndex == 1 || pIndex == 3) //  目前只支持2个角色选择
         {
+            GameManager.instance.setPIndex(pIndex);
             isBegin = true;
             MusicManager.instance.playAudio("Audios/Background/begin");
             Invoke("beginSection", 0.3f);

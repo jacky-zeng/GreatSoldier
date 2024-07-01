@@ -21,6 +21,7 @@ public class Ghost : BaseEnemy
     #region 初始化
     void Start()
     {
+        player = GameObject.Find("Player");
         enemyAvatarSprite = Resources.Load<Sprite>("Images/Enemy/Ghost/enemyAvatar") as Sprite;
     }
     #endregion
@@ -101,6 +102,10 @@ public class Ghost : BaseEnemy
 
     private void beginReal()
     {
+        if (player == null)
+        {
+            player = GameObject.Find("Player");
+        }
         isBeginReal = true;
     }
 

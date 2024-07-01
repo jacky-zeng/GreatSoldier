@@ -21,6 +21,7 @@ public class Knife : BaseEnemy
     #region 初始化
     void Start()
     {
+        player = GameObject.Find("Player");
         //因为Knife这个敌人更大，需要改变上挑吸附距离
         xiFuLeft = new Vector3(3.5f, 2.5f, 0);
         xiFuRight = new Vector3(-3.5f, 2.5f, 0);
@@ -105,6 +106,10 @@ public class Knife : BaseEnemy
 
     private void beginReal()
     {
+        if (player == null)
+        {
+            player = GameObject.Find("Player");
+        }
         isBeginReal = true;
     }
 
@@ -194,7 +199,16 @@ public class Knife : BaseEnemy
         //rigi.velocity = new Vector3(0, 0, 0);
         ////敌人摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
-        animator.SetTrigger("triggerDie");
+        if(byAttackType == 2)
+        {
+            animator.SetTrigger("triggerDieKnife");
+        } else
+        {
+            animator.SetTrigger("triggerDie");
+        }
+
+        //playAudio("Audios/Tool/manDie");
+
         dieDestroy();
     }
 }
