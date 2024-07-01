@@ -718,8 +718,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeLeft: 0
   isBegin: 0
-  secTen: {fileID: 93167594}
-  secOne: {fileID: 939749916}
+  secTen: {fileID: 939749916}
+  secOne: {fileID: 93167594}
 --- !u!1 &477515199
 GameObject:
   m_ObjectHideFlags: 0
