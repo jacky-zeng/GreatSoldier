@@ -13,8 +13,11 @@ public class GameManager : MonoBehaviour
     private string sceneName; //场景名称
     public GameObject prefabGhost;
     public GameObject prefabKnife;
+    public GameObject prefabKunBasketBall;
     public GameObject prefabPlayer;
     public GameObject prefabPlayerGirl;
+
+    private GameObject gameObjectPlayer;
 
     private bool isOkSectionOne1 = false;
     private bool isOkSectionOne2 = false;
@@ -32,6 +35,8 @@ public class GameManager : MonoBehaviour
     private float playerPosZ;           //切换场景时，记录在上一个场景中的z值
     private float playerHitDamage = 0;  //切换场景时，记录在上一个场景中的hitDamage值
     private int pIndex;                 //选的哪个角色
+
+    private bool isKunBasketBallOk = false;
 
     void Awake()
     {
@@ -92,6 +97,14 @@ public class GameManager : MonoBehaviour
                     sectionOneLoad(3);
                     //Debug.Log("GameManager " + sceneName);
                 }
+                if (!isKunBasketBallOk && gameObjectPlayer.transform.position.x >= 78)
+                {
+                    isKunBasketBallOk = true;
+                    float leftEdgeX = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, Camera.main.nearClipPlane)).x;
+
+                    sectionOneKunBasketBallBegin(leftEdgeX);
+                }
+
                 break;
             case "SceneSection2_1":
                 if (!isOkSectionTwo1)
@@ -120,6 +133,14 @@ public class GameManager : MonoBehaviour
 
     public void nextSection(string name)
     {
+        if(gameObjectPlayer.GetComponent<Player>() != null)
+        {
+            gameObjectPlayer.GetComponent<Player>().setUnmatched(10, true);
+        } else
+        {
+            gameObjectPlayer.GetComponent<PlayerGirl>().setUnmatched(10, true);
+        }
+
         sectionName = name;
         Invoke("nextSectionInvoke", 5);
     }
@@ -166,7 +187,7 @@ public class GameManager : MonoBehaviour
     private void sectionOneLoad(int index)
     {
         //角色加载
-        GameObject gameObjectPlayer = initPlayer(new Vector3(-2.5f, 0.53f, -4.83f));
+        initPlayer(new Vector3(-2.5f, 0.53f, -4.83f));
        
         int section = 1;
         //敌人gameobject命名 #关卡  ｜第几个敌人  _关卡中的场景index
@@ -197,7 +218,7 @@ public class GameManager : MonoBehaviour
     private void sectionTwoLoad(int index)
     {
         //角色加载
-        GameObject gameObjectPlayer = initPlayer(new Vector3(-18.6f, 0.53f, -4.83f));
+        initPlayer(new Vector3(-18.6f, 0.53f, -4.83f));
 
         int section = 2;
         //敌人gameobject命名 #关卡  ｜第几个敌人  _关卡中的场景index
@@ -215,9 +236,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private GameObject initPlayer(Vector3 pos)
+    private void initPlayer(Vector3 pos)
     {
-        GameObject gameObjectPlayer = null;
+        gameObjectPlayer = null;
         int tempPIndex = getPIndex();
         if(tempPIndex == 1)
         {
@@ -230,7 +251,6 @@ public class GameManager : MonoBehaviour
             gameObjectPlayer.transform.localPosition = pos;  //必须使用localPosition
             gameObjectPlayer.name = "Player";
         }
-        return gameObjectPlayer;
     }
 
     /// <summary>
@@ -241,7 +261,7 @@ public class GameManager : MonoBehaviour
     /// <param name="name">物体名称</param>
     /// <param name="pos">加载位置</param>
     /// <param name="animatorType">默认播放哪个初始动画</param>
-    private void enemyAdd(int section, int index, string name, Vector3 pos, int animatorType)
+    private void enemyAdd(int section, int index, string name, Vector3 pos, int animatorType = 0)
     {
         GameObject gameObjectInit = null;
         if (section == 1)
@@ -257,6 +277,12 @@ public class GameManager : MonoBehaviour
                 gameObjectInit = Instantiate(prefabKnife);
                 gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
             }
+            else if (name.StartsWith("EnemyKunBasketBall"))
+            {
+                gameObjectInit = Instantiate(prefabKunBasketBall);
+                gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
+            }
+            
 
             string gameObjectName = name + "_" + index.ToString();
             gameObjectInit.gameObject.name = gameObjectName;
@@ -314,6 +340,10 @@ public class GameManager : MonoBehaviour
                     {
                         sectionOne1Enemy.Value.GetComponent<Knife>().begin();
                     }
+                    else if (sectionOne1Enemy.Key.StartsWith("EnemyKunBasketBall"))
+                    {
+                        sectionOne1Enemy.Value.GetComponent<KunBasketBall>().begin();
+                    }
                 }
             }
         }
@@ -331,6 +361,10 @@ public class GameManager : MonoBehaviour
                     else if (sectionOne2Enemy.Key.StartsWith("EnemyKnife"))
                     {
                         sectionOne2Enemy.Value.GetComponent<Knife>().begin();
+                    }
+                    else if (sectionOne2Enemy.Key.StartsWith("EnemyKunBasketBall"))
+                    {
+                        sectionOne2Enemy.Value.GetComponent<KunBasketBall>().begin();
                     }
                 }
             }
@@ -355,6 +389,11 @@ public class GameManager : MonoBehaviour
                     {
                         sectionTwo1Enemy.Value.GetComponent<Knife>().begin();
                     }
+                    else if (sectionTwo1Enemy.Key.StartsWith("EnemyKunBasketBall"))
+                    {
+                        sectionTwo1Enemy.Value.GetComponent<KunBasketBall>().begin();
+                    }
+                    
                 }
             }
         }
@@ -373,6 +412,15 @@ public class GameManager : MonoBehaviour
             //boss.gameObject.GetComponent<Kun>().playAudio("Audios/Background/section1Boss");
             boss.gameObject.GetComponent<Kun>().begin();
         }
+    }
+
+    //第一关添加扔篮球的
+    public void sectionOneKunBasketBallBegin(float x)
+    {
+        enemyAdd(1, 3, "EnemyKunBasketBall#1|1", new Vector3(x + 5, -13.26f, 0.27f));
+        enemyAdd(1, 3, "EnemyKunBasketBall#1|2", new Vector3(x + 5, -13.26f, 1.2f));
+
+        sectionOneEnemyBegin(1, 3);
     }
 
     //第section关第index部分的敌人死了

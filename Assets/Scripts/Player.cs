@@ -24,7 +24,7 @@ public class Player : MonoBehaviour
     private int cameraDirectionMove = 0;
 
     //无敌时间
-    private float unmatchedSecond = 0;
+    private float unmatchedSecond = 1;
     private bool isUnmatched = false;
     private bool isDie = false;
     private bool isEnd = false;
@@ -354,8 +354,14 @@ public class Player : MonoBehaviour
             switch (sceneName)
             {
                 case "SceneSection1_1":
+                    bool isSectionOneEnemyAllDied1 = GameManager.instance.isSectionOneEnemyAllDied(1);
+                    if(isSectionOneEnemyAllDied1 && !GameObject.Find("Go").GetComponent<Go>().getIsOn())
+                    {
+                        GameObject.Find("Go").GetComponent<Go>().begin();
+                    }
+
                     float playerPosX = transform.position.x;
-                    if (playerPosX >= 66 && GameManager.instance.isSectionOneEnemyAllDied(1))
+                    if (playerPosX >= 66 && isSectionOneEnemyAllDied1)
                     {
                         //保存一下当前player的Z轴位置（为了进入下一个场景时，player位置不变）
                         GameManager.instance.setPlayerPosZ(transform.position.z);
@@ -376,7 +382,13 @@ public class Player : MonoBehaviour
                     }
                     break;
                 case "SceneSection1_2":
-                    if (transform.position.x >= 31 && GameManager.instance.isSectionOneEnemyAllDied(2) && GameObject.Find("EnemyLeiShen") == null)
+                    bool isSectionOneEnemyAllDied2 = GameManager.instance.isSectionOneEnemyAllDied(2) && GameObject.Find("EnemyLeiShen") == null;
+                    if (isSectionOneEnemyAllDied2 && !GameObject.Find("Go").GetComponent<Go>().getIsOn())
+                    {
+                        GameObject.Find("Go").GetComponent<Go>().begin();
+                    }
+
+                    if (transform.position.x >= 31 && isSectionOneEnemyAllDied2)
                     {
                         //保存一下当前player的Z轴位置（为了进入下一个场景时，player位置不变）
                         GameManager.instance.setPlayerPosZ(transform.position.z);
@@ -393,7 +405,7 @@ public class Player : MonoBehaviour
                     }
                     break;
                 case "SceneSection1_3":
-                    if (transform.position.x >= 68)
+                    if (transform.position.x >= 78)
                     {
                         //boss开始生效
                         GameManager.instance.sectionOneBossBegin();
@@ -435,6 +447,9 @@ public class Player : MonoBehaviour
                     GameManager.instance.setPlayerHitDamage(0);
                     bloodBar.fillAmount = 1;
                     isDie = false;
+
+                    //重生后 设置3秒无敌
+                    setUnmatched(3);
                 }
             }
             else if (hitDamage >= maxBlood) //死亡
@@ -452,6 +467,10 @@ public class Player : MonoBehaviour
                         {
                             //Log("无敌已过" + Time.deltaTime);
                             isUnmatched = false;
+
+                            //恢复不透明
+                            Color currentColor = GetComponent<SpriteRenderer>().material.color;
+                            GetComponent<SpriteRenderer>().material.color = new Color(currentColor.r, currentColor.g, currentColor.b, 1);
                         }
                     }
 
@@ -493,7 +512,7 @@ public class Player : MonoBehaviour
         }
 
         bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.J);
-        bool isButtonAttackCircle = Input.GetKey(KeyCode.J) && Input.GetKey(KeyCode.K);
+        bool isButtonAttackCircle = isGetMouseButtonDown0 && Input.GetKey(KeyCode.K);
         if((isButtonAttackCircle || isAttackCircle) && (hitDamage + 2) < maxBlood)
         {
             attackCircle();
@@ -543,7 +562,7 @@ public class Player : MonoBehaviour
 
             if (!tempIsAttackFly)
             {
-                if (Input.GetKeyDown(KeyCode.Space))   //跳跃
+                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.K))   //跳跃
                 {
                     jump();
                 }
@@ -973,28 +992,51 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnterOrStay(Collider collision, string type)
     {
-        if (!isDie && collision.gameObject.name == "EnemyAttack") //受到敌人攻击
+        if (!isDie && !isUnmatched)
         {
-            bool directionHit = collision.transform.parent.position.x > transform.position.x ? true : false;
-            if (collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackHeavy"))
+            if (collision.gameObject.name == "EnemyAttack") //受到敌人攻击
             {
-                //Log("Heavy hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
+                bool directionHit = collision.transform.parent.position.x > transform.position.x ? true : false;
+                if (collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackHeavy"))
+                {
+                    //Log("Heavy hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
 
-                hitHeavy(directionHit);
-            } else if(collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("jumpAttack"))
-            {
-                hitJump(directionHit);
+                    hitHeavy(directionHit);
+                }
+                else if (collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("jumpAttack"))
+                {
+                    hitJump(directionHit);
+                }
+                else
+                {
+                    //Log("Normal hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
+
+                    hit(directionHit);
+                }
             }
-            else
+            else if (collision.gameObject.name.StartsWith("Basketball")) // Basketball(Clone) 受到篮球攻击
             {
-                //Log("Normal hitDamage=" + hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
-
-                hit(directionHit);
+                hit(true);
+                collision.gameObject.GetComponent<BasketBall>().setDie();
             }
         }
     }
 
     #endregion
+
+    //设置无敌
+    public void setUnmatched(float sec, bool isSectionEnd = false)
+    {
+        isUnmatched = true;
+        unmatchedSecond = sec;
+
+        if(!isSectionEnd)  //过关时只是无敌，不会变透明
+        {
+            //变透明一点
+            Color currentColor = GetComponent<SpriteRenderer>().material.color;
+            GetComponent<SpriteRenderer>().material.color = new Color(currentColor.r, currentColor.g, currentColor.b, 0.8f);
+        }
+    }
 
     //受到普通伤害
     public void hit(bool directionHit)

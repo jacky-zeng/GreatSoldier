@@ -61,13 +61,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets/Scripts/MusicManager.cs" />
+    <Compile Include="Assets/Scripts/Enemy/BasketBall.cs" />
     <Compile Include="Assets/Scripts/Enemy/LeiShen.cs" />
     <Compile Include="Assets/Scripts/Map/mapStage.cs" />
     <Compile Include="Assets/Scripts/Enemy/BaseEnemy.cs" />
+    <Compile Include="Assets/Scripts/Enemy/KunBasketBall.cs" />
     <Compile Include="Assets/Scripts/Tool/Hit.cs" />
     <Compile Include="Assets/Scripts/ObjectPool.cs" />
     <Compile Include="Assets/Scripts/Tool/CanvasContinue.cs" />
     <Compile Include="Assets/Scripts/Enemy/Ghost.cs" />
+    <Compile Include="Assets/Scripts/PlayerKnife.cs" />
     <Compile Include="Assets/Scripts/Tool/Hit2.cs" />
     <Compile Include="Assets/Scripts/Enemy/Knife.cs" />
     <Compile Include="Assets/Scripts/Player.cs" />
@@ -75,6 +78,7 @@
     <Compile Include="Assets/Scripts/Tool/CanvasTimer.cs" />
     <Compile Include="Assets/Scripts/Map/Glass.cs" />
     <Compile Include="Assets/Scripts/StartGame.cs" />
+    <Compile Include="Assets/Scripts/Tool/Go.cs" />
     <Compile Include="Assets/Scripts/Enemy/Kun.cs" />
     <Compile Include="Assets/Scripts/PlayerGirl.cs" />
   </ItemGroup>

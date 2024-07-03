@@ -126,6 +126,7 @@ public class StartGame : MonoBehaviour
 
     private void beginSection()
     {
+        //SceneManager.LoadScene("SceneSection2_1", LoadSceneMode.Single);
         SceneManager.LoadScene("SceneSection1_1", LoadSceneMode.Single);
     }
 
