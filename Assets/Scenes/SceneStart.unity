@@ -1451,6 +1451,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabGhost: {fileID: 5722328396941367787, guid: 13586b211fbfc4a07b01118d66369c0f, type: 3}
   prefabKnife: {fileID: 8705255043989997785, guid: 675d2ce25f359437586bf28939940a20, type: 3}
+  prefabElectricGirl: {fileID: 1977989484442370079, guid: d062936d02559432c873fdb730fce29f, type: 3}
   prefabKunBasketBall: {fileID: 8658669159698866797, guid: 07f2a8693cc7b419f822d710af491fb4, type: 3}
   prefabPlayer: {fileID: 8669003451581204957, guid: 6eadd835e7b774386a473c833e642de4, type: 3}
   prefabPlayerGirl: {fileID: 1021194740245718396, guid: cdaa93fee930d4afebe5e0e09f2538bc, type: 3}

@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     private string sceneName; //场景名称
     public GameObject prefabGhost;
     public GameObject prefabKnife;
+    public GameObject prefabElectricGirl;
     public GameObject prefabKunBasketBall;
     public GameObject prefabPlayer;
     public GameObject prefabPlayerGirl;
@@ -71,7 +72,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        sceneName = SceneManager.GetActiveScene().name;
         switch (sceneName)
         {
             case "SceneSection1_1":
@@ -190,7 +191,7 @@ public class GameManager : MonoBehaviour
         initPlayer(new Vector3(-2.5f, 0.53f, -4.83f));
        
         int section = 1;
-        //敌人gameobject命名 #关卡  ｜第几个敌人  _关卡中的场景index
+        //敌人gameobject命名 #关卡  ｜第几个敌人
         if (index == 1)
         {
             //Vector3(-2.5,3.29999995,-4.82999992)
@@ -221,7 +222,7 @@ public class GameManager : MonoBehaviour
         initPlayer(new Vector3(-18.6f, 0.53f, -4.83f));
 
         int section = 2;
-        //敌人gameobject命名 #关卡  ｜第几个敌人  _关卡中的场景index
+        //敌人gameobject命名 #关卡  ｜第几个敌人
         if (index == 1)
         {
             enemyAdd(section, index, "EnemyKnife#2|1", new Vector3(49.5f, 0.85f, -5f), 2);
@@ -229,6 +230,9 @@ public class GameManager : MonoBehaviour
             enemyAdd(section, index, "EnemyKnife#2|3", new Vector3(30.5f, 0.85f, -5f), 2);
 
             enemyAdd(section, index, "EnemyGhost#2|4", new Vector3(30.5f, 0.85f, -5f), 1);
+
+            enemyAdd(section, index, "EnemyElectricGirl#2|5", new Vector3(50.5f, 0.85f, -5f), 2);
+            enemyAdd(section, index, "EnemyElectricGirl#2|6", new Vector3(55.5f, 0.85f, -5f), 2);
         }
         else if (index == 2)
         {
@@ -306,6 +310,11 @@ public class GameManager : MonoBehaviour
             else if (name.StartsWith("EnemyKnife"))
             {
                 gameObjectInit = Instantiate(prefabKnife);
+                gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
+            }
+            else if (name.StartsWith("EnemyElectricGirl"))
+            {
+                gameObjectInit = Instantiate(prefabElectricGirl);
                 gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
             }
 
@@ -388,6 +397,10 @@ public class GameManager : MonoBehaviour
                     else if (sectionTwo1Enemy.Key.StartsWith("EnemyKnife"))
                     {
                         sectionTwo1Enemy.Value.GetComponent<Knife>().begin();
+                    }
+                    else if (sectionTwo1Enemy.Key.StartsWith("EnemyElectricGirl"))
+                    {
+                        sectionTwo1Enemy.Value.GetComponent<ElectricGirl>().begin();
                     }
                     else if (sectionTwo1Enemy.Key.StartsWith("EnemyKunBasketBall"))
                     {
