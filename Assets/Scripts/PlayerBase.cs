@@ -72,10 +72,12 @@ public class PlayerBase : MonoBehaviour
     //受到了几次伤害
     protected float hitDamage = 0;
     //总血量
-    protected float maxBlood = 5;
-    protected bool isHit = false;
-    protected bool isHitHeavy = false;
-    protected bool isHitJump = false;
+    protected float maxBlood = 10;
+    //是否受到攻击
+    protected bool isHit = false;           //受到普通攻击
+    protected bool isHitHeavy = false;      //受到重攻击
+    protected bool isHitJump = false;       //受到跳跃攻击
+    protected bool isHitElectric = false;   //受到电击攻击
     //血条
     private Image bloodBar;
 
@@ -171,8 +173,16 @@ public class PlayerBase : MonoBehaviour
         canvasContinue.SetActive(false);
         canvasTimer.SetActive(false);
 
-        GameObject.Find("Canvas").transform.Find("PlayerHeath")
-            .GetComponent<Image>().sprite = Resources.Load<Sprite>("Images/Player/blood_1p") as Sprite;
+        if(isPlayerGirl)
+        {
+            GameObject.Find("Canvas").transform.Find("PlayerHeath")
+           .GetComponent<Image>().sprite = Resources.Load<Sprite>("Images/PlayerGirl/blood_2p") as Sprite;
+        } else
+        {
+            GameObject.Find("Canvas").transform.Find("PlayerHeath")
+           .GetComponent<Image>().sprite = Resources.Load<Sprite>("Images/Player/blood_1p") as Sprite;
+        }
+       
 
         Debug.Log((canvasContinue == null ? "canvasContinue is null" : " canvasContinue") + (bloodBar == null ? "bloodBar is null" : " bloodBar") + (mapStage == null ? "mapStage is null" : " mapStage"));
     }
@@ -485,6 +495,10 @@ public class PlayerBase : MonoBehaviour
     #region 动作
     private void action()
     {
+        if(isHitElectric) //被电击时，无法操作
+        {
+            return;
+        }
         //计算出horizontal和vertical
         if (Input.GetKey(KeyCode.W))
         {
@@ -989,12 +1003,12 @@ public class PlayerBase : MonoBehaviour
     #endregion
 
     //设置无敌
-    public void setUnmatched(float sec, bool isSectionEnd = false)
+    public void setUnmatched(float sec, bool isDotSetTransparent = false)
     {
         isUnmatched = true;
         unmatchedSecond = sec;
 
-        if(!isSectionEnd)  //过关时只是无敌，不会变透明
+        if(!isDotSetTransparent)  //过关时只是无敌，不会变透明
         {
             //变透明一点
             Color currentColor = GetComponent<SpriteRenderer>().material.color;

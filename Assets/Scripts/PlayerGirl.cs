@@ -82,6 +82,10 @@ public class PlayerGirl : PlayerBase
                 {
                     hitJump(directionHit);
                 }
+                if (collision.transform.parent.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("attackElectric"))
+                {
+                    hitElectric();
+                }
                 else
                 {
                     //Log("Normal hitDamage=" + base.hitDamage + "受到伤害EnemyAttack" + collision.transform.parent.position.x + "|" + transform.position.x, true);
@@ -128,6 +132,20 @@ public class PlayerGirl : PlayerBase
         }
     }
 
+    //受到电击伤害
+    public void hitElectric()
+    {
+        if(!base.isHitElectric)
+        {
+            base.isHitElectric = true;
+            ++base.hitDamage;
+            playAudio("Audios/Tool/womanHit");
+            base.setUnmatched(1.5f, true); //被电时，无敌1.5秒
+            base.animator.SetTrigger("triggerHitE");
+            Invoke("animatorHitElectricEndEvent", 1f);
+        }
+    }
+
     //受到跳起来的下砸伤害
     public void hitJump(bool directionHit)
     {
@@ -163,6 +181,11 @@ public class PlayerGirl : PlayerBase
         //rigi.velocity = new Vector3(0, 0, 0);
         ////摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    private void animatorHitElectricEndEvent()
+    {
+        base.isHitElectric = false;
     }
 
     private void die()

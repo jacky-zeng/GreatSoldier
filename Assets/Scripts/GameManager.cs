@@ -231,7 +231,7 @@ public class GameManager : MonoBehaviour
 
             enemyAdd(section, index, "EnemyGhost#2|4", new Vector3(30.5f, 0.85f, -5f), 1);
 
-            enemyAdd(section, index, "EnemyElectricGirl#2|5", new Vector3(50.5f, 0.85f, -5f), 2);
+            enemyAdd(section, index, "EnemyElectricGirl#2|5", new Vector3(50.5f, 0.85f, 5f), 2);
             enemyAdd(section, index, "EnemyElectricGirl#2|6", new Vector3(55.5f, 0.85f, -5f), 2);
         }
         else if (index == 2)
