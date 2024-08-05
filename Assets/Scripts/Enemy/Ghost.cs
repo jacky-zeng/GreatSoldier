@@ -60,6 +60,10 @@ public class Ghost : BaseEnemy
                     if(walkDuringTime == 0)
                     {
                         targetPosition = player.transform.position; //获取的是walkMaxDuringTime前的player所在位置
+                        if (Random.Range(1, 99) > 50)
+                        {
+                            targetPosition.x += 5;
+                        }
                     }
 
                     if ( walkDuringTime >= walkMaxDuringTime)

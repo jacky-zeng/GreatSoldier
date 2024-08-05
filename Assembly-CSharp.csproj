@@ -82,6 +82,7 @@
     <Compile Include="Assets/Scripts/PlayerBase.cs" />
     <Compile Include="Assets/Scripts/Tool/Go.cs" />
     <Compile Include="Assets/Scripts/Enemy/Kun.cs" />
+    <Compile Include="Assets/Scripts/Enemy/GangKnife.cs" />
     <Compile Include="Assets/Scripts/PlayerGirl.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -108,6 +108,12 @@ public class BaseEnemy : MonoBehaviour
         enemyAvatar = GameObject.Find("Canvas").transform.Find("EnemyHealth").GetComponent<Image>();
         bloodBar = GameObject.Find("Canvas").transform.Find("EnemyHealth")
             .transform.Find("EnemyHealthBg").transform.Find("bloodBar").GetComponent<Image>();
+
+        //测试时，一刀杀敌
+        if (PlayerPrefs.GetInt("isTest", 0) == 1)
+        {
+            maxBlood = 1;
+        }
     }
 
     #region 碰撞

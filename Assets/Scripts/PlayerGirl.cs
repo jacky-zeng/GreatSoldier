@@ -1,8 +1,13 @@
 
 using UnityEngine;
+using UnityEngine.Video;
 
 public class PlayerGirl : PlayerBase
 {
+    private bool isCheckHitMan = true;
+    private bool isDisablePlayer = false;
+    private bool isTriggerManPlayerOk = false;
+
     #region 初始化
     private void Awake()
     {
@@ -30,9 +35,72 @@ public class PlayerGirl : PlayerBase
         {
             die();
         }
-        base.BaseUpdate();
+        else if (isCheckHitMan && base.sceneName == "SceneSection2_1")
+        {
+            //敌人全部消灭后，人物往电视机那里走
+            if (isDisablePlayer || GameManager.instance.isSectionTwoEnemyAllDied(1))
+            {
+                GameObject.Find("manPlayer").GetComponent<Animator>().SetBool("isLaugh", true);
+                GameObject.Find("knife").GetComponent<SpriteRenderer>().enabled = true;
+                isDisablePlayer = true;
+                walk(transform.position, new Vector3(0.7085f, 0.9297f, 0.0812f));
+            }
+
+            //远离时 视频静音
+            if(transform.position.x > 18.776f)
+            {
+                GameObject.Find("Video").GetComponent<VideoPlayer>().Pause();
+                //GameObject.Find("Video").GetComponent<VideoPlayer>().enabled = false;
+            } else if(isTriggerManPlayerOk)
+            {
+                GameObject.Find("Video").GetComponent<VideoPlayer>().Play();
+                //GameObject.Find("Video").GetComponent<VideoPlayer>().enabled = true;
+            }
+        }
+
+        if(!isDisablePlayer)
+        {
+            base.BaseUpdate();
+        }
     }
     #endregion
+
+    private void walk(Vector3 currentPosition, Vector3 targetPosition)
+    {
+        //朝向
+        GetComponent<SpriteRenderer>().flipX = true;
+
+        base.stopAttack();
+        base.stopAttackUp();
+        base.stopJumpAttack();
+
+        animator.SetBool("isWalk", true);
+
+        // 计算移动的方向和距离
+        Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+        Vector3 moveDirection = directionToTarget * (moveSpeed / 1.5f) * Time.deltaTime;
+
+        // 移动
+        transform.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
+
+        //走到电视机前，人物“嘿嘿2”
+        //踢飞人物，电视机器关掉
+        if (Mathf.Abs(Vector3.Distance(currentPosition, targetPosition)) <= 1.5f)  //currentPosition == targetPosition 
+        {
+            //不在检查是否攻击了manPlayer
+            isCheckHitMan = false;
+
+            //trigger后，播放人物“嘿嘿”动画
+            GameObject obj = GameObject.Find("turnOnTv");
+
+            //人物“嘿嘿”笑
+            AudioClip clip = Resources.Load<AudioClip>("Audios/Show/manLaugh");
+            obj.GetComponent<AudioSource>().clip = clip;
+            obj.GetComponent<AudioSource>().Play();
+
+            Invoke("hitFlyScreen", 1.5f);
+        }
+    }
 
     #region 碰撞
     //接触到
@@ -93,14 +161,79 @@ public class PlayerGirl : PlayerBase
                     hit(directionHit);
                 }
             }
+            else if (collision.gameObject.name.StartsWith("ToolGangKnife")) //  受到闸刀攻击
+            {
+                bool directionHit = collision.transform.position.x > transform.position.x ? true : false;
+                hitHeavy(directionHit);
+            }
             else if (collision.gameObject.name.StartsWith("Basketball")) // Basketball(Clone) 受到篮球攻击
             {
                 hit(true);
                 collision.gameObject.GetComponent<BasketBall>().setDie();
             }
+            else if (collision.gameObject.name.StartsWith("trigger")) // Basketball(Clone) 受到篮球攻击
+            {
+                if(collision.gameObject.name == "triggerManPlayer")
+                {
+                    isTriggerManPlayerOk = true;
+                    //trigger后，播放开机动画
+                    Destroy(collision.gameObject);
+                    GameObject obj = GameObject.Find("turnOnTv");
+                    obj.GetComponent<Animator>().enabled = true;
+
+                    //开机声
+                    AudioClip clip = Resources.Load<AudioClip>("Audios/Show/turnOnTv");
+                    obj.GetComponent<AudioSource>().clip = clip;
+                    obj.GetComponent<AudioSource>().Play();
+
+                    Invoke("videoBegin", 1f);
+                }
+            }
         }
     }
     #endregion
+
+    //播放视频
+    private void videoBegin()
+    {
+        //开机后，禁用开机动画,人物“嘿嘿”笑
+        GameObject obj = GameObject.Find("turnOnTv");
+        obj.GetComponent<Animator>().enabled = false;
+        obj.GetComponent<SpriteRenderer>().enabled = false;
+        AudioClip clip = Resources.Load<AudioClip>("Audios/Show/manLaugh");
+        obj.GetComponent<AudioSource>().clip = clip;
+        obj.GetComponent<AudioSource>().Play();
+
+        //播放视频
+        GameObject.Find("Video").GetComponent<VideoPlayer>().enabled = true;
+    }
+
+    //踢飞到屏幕
+    private void hitFlyScreen()
+    {
+        playAudio("Audios/Tool/wumanAttack1");
+
+        //关闭视频
+        GameObject.Find("Video").GetComponent<VideoPlayer>().enabled = false;
+
+        GameObject obj = GameObject.Find("turnOnTv");
+        obj.GetComponent<Animator>().enabled = false;
+
+        //关闭视频的图片
+        obj.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/Map/Show/turnOnTvOff") as Sprite;
+        obj.GetComponent<SpriteRenderer>().enabled = true;
+
+        //踢飞动画
+        GameObject.Find("manPlayer").GetComponent<Animator>().SetBool("isHit", true);
+       
+        //撞击屏幕后的声音
+        AudioClip clip = Resources.Load<AudioClip>("Audios/Show/manHitScreen");
+        obj.GetComponent<AudioSource>().clip = clip;
+        obj.GetComponent<AudioSource>().Play();
+
+        //玩家可以自由移动了
+        isDisablePlayer = false;
+    }
 
     //受到普通伤害
     public void hit(bool directionHit)

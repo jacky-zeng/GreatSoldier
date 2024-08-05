@@ -92,6 +92,11 @@ public class Player : PlayerBase
                     hit(directionHit);
                 }
             }
+            else if (collision.gameObject.name.StartsWith("ToolGangKnife")) //  受到闸刀攻击
+            {
+                bool directionHit = collision.transform.position.x > transform.position.x ? true : false;
+                hitHeavy(directionHit);
+            }
             else if (collision.gameObject.name.StartsWith("Basketball")) // Basketball(Clone) 受到篮球攻击
             {
                 hit(true);

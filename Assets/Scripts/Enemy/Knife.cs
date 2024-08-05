@@ -10,7 +10,7 @@ public class Knife : BaseEnemy
     private float beginRealAfterTime = 0.5f;
 
     private Vector3 targetPosition;
-    private float walkMaxDuringTime = 1.5f;  //移动持续最大时间
+    private float walkMaxDuringTime = 2f;  //移动持续最大时间
     private float walkDuringTime = 0;        //移动已持续时间
 
     private void Awake()
@@ -62,6 +62,14 @@ public class Knife : BaseEnemy
                     if (walkDuringTime == 0)
                     {
                         targetPosition = player.transform.position; //获取的是walkMaxDuringTime前的player所在位置
+                        int rand = Random.Range(1, 99);
+                        if (rand > 80)
+                        {
+                            targetPosition.x -= 5;
+                        } else if (rand > 45)
+                        {
+                            targetPosition.z -= 2;
+                        }
                     }
 
                     if (walkDuringTime >= walkMaxDuringTime)

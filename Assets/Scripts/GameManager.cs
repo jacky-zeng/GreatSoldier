@@ -32,6 +32,8 @@ public class GameManager : MonoBehaviour
 
     private Dictionary<string, GameObject> sectionTwo1Enemys = new Dictionary<string, GameObject>();
 
+    private Dictionary<string, bool> isEnemyBeginDict = new Dictionary<string, bool>();
+
     //player相关信息
     private float playerPosZ;           //切换场景时，记录在上一个场景中的z值
     private float playerHitDamage = 0;  //切换场景时，记录在上一个场景中的hitDamage值
@@ -226,13 +228,17 @@ public class GameManager : MonoBehaviour
         if (index == 1)
         {
             enemyAdd(section, index, "EnemyKnife#2|1", new Vector3(49.5f, 0.85f, -5f), 2);
-            enemyAdd(section, index, "EnemyKnife#2|2", new Vector3(50.5f, 0.85f, -5f), 2);
+            //enemyAdd(section, index, "EnemyKnife#2|2", new Vector3(50.5f, 0.85f, -5f), 2);
             enemyAdd(section, index, "EnemyKnife#2|3", new Vector3(30.5f, 0.85f, -5f), 2);
 
             enemyAdd(section, index, "EnemyGhost#2|4", new Vector3(30.5f, 0.85f, -5f), 1);
 
             enemyAdd(section, index, "EnemyElectricGirl#2|5", new Vector3(50.5f, 0.85f, 5f), 2);
-            enemyAdd(section, index, "EnemyElectricGirl#2|6", new Vector3(55.5f, 0.85f, -5f), 2);
+            enemyAdd(section, index, "EnemyElectricGirl#2|6", new Vector3(50.5f, 0.85f, -5f), 2);
+
+            //enemyAdd(section, index, "EnemyElectricGirl#2|7", new Vector3(68.5f, 0.85f, 5f), 2);
+            enemyAdd(section, index, "EnemyElectricGirl#2|8", new Vector3(69, 0.85f, -5f), 2);
+            enemyAdd(section, index, "EnemyKnife#2|9", new Vector3(70, 0.85f, -3f), 2);
         }
         else if (index == 2)
         {
@@ -242,6 +248,12 @@ public class GameManager : MonoBehaviour
 
     private void initPlayer(Vector3 pos)
     {
+        if(sceneName == "SceneSection2_1") //第二关，直接换刀女
+        {
+            setPIndex(3);
+            setPlayerHitDamage(0);
+        }
+
         gameObjectPlayer = null;
         int tempPIndex = getPIndex();
         if(tempPIndex == 1)
@@ -334,6 +346,16 @@ public class GameManager : MonoBehaviour
     //Player.cs调用该方法（player走到一定位置，触发敌人开始）
     public void sectionOneEnemyBegin(int index, int max)
     {
+        string key = "1_" + index + "_" + max;
+        if (isEnemyBeginDict.ContainsKey(key))
+        {
+            return;
+        }
+        else
+        {
+            isEnemyBeginDict.Add(key, true);
+        }
+
         if (index == 1)
         {
             foreach (KeyValuePair<string, GameObject> sectionOne1Enemy in sectionOne1Enemys)
@@ -383,6 +405,16 @@ public class GameManager : MonoBehaviour
     //Player.cs调用该方法（player走到一定位置，触发敌人开始）
     public void sectionTwoEnemyBegin(int index, int max)
     {
+        string key = "2_" + index + "_" + max;
+        if (isEnemyBeginDict.ContainsKey(key))
+        {
+            return;
+        }
+        else
+        {
+            isEnemyBeginDict.Add(key, true);
+        }
+
         if (index == 1)
         {
             foreach (KeyValuePair<string, GameObject> sectionTwo1Enemy in sectionTwo1Enemys)
@@ -406,13 +438,13 @@ public class GameManager : MonoBehaviour
                     {
                         sectionTwo1Enemy.Value.GetComponent<KunBasketBall>().begin();
                     }
-                    
+
                 }
             }
         }
         else if (index == 2)
         {
-           
+
         }
     }
 

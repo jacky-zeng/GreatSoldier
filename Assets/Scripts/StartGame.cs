@@ -21,9 +21,9 @@ public class StartGame : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        PlayerPrefs.SetInt("isTest", 0);
         CanvasContinue.instance.gameObject.SetActive(false);
         CanvasTimer.instance.gameObject.SetActive(false);
-
 
         MusicManager.instance.playAudio("Audios/Background/start");
         initBg();

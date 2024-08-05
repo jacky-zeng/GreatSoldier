@@ -86,7 +86,7 @@ public class PlayerBase : MonoBehaviour
     private float transformCameraY;
     private float transformCameraZ;
 
-    private string sceneName;
+    protected string sceneName;
 
     private bool isCameraActionEnd = false; //是否运镜结束
 
@@ -370,7 +370,7 @@ public class PlayerBase : MonoBehaviour
             {
                 case "SceneSection1_1":
                     bool isSectionOneEnemyAllDied1 = GameManager.instance.isSectionOneEnemyAllDied(1);
-                    if(isSectionOneEnemyAllDied1 && !GameObject.Find("Go").GetComponent<Go>().getIsOn())
+                    if (isSectionOneEnemyAllDied1 && !GameObject.Find("Go").GetComponent<Go>().getIsOn())
                     {
                         GameObject.Find("Go").GetComponent<Go>().begin();
                     }
@@ -387,7 +387,7 @@ public class PlayerBase : MonoBehaviour
                         //加载场景2
                         SceneManager.LoadScene("SceneSection1_2", LoadSceneMode.Single);
                     }
-                    else if(playerPosX >= 5.5f && playerPosX < 20) //敌人开始
+                    else if (playerPosX >= 5.5f && playerPosX < 20) //敌人开始
                     {
                         GameManager.instance.sectionOneEnemyBegin(1, 3);
                     }
@@ -414,12 +414,17 @@ public class PlayerBase : MonoBehaviour
 
                         //加载场景3
                         SceneManager.LoadScene("SceneSection1_3", LoadSceneMode.Single);
-                    } else
+                    }
+                    else
                     {
                         GameManager.instance.sectionOneEnemyBegin(2, 3);
                     }
                     break;
                 case "SceneSection1_3":
+                    if(transform.position.x >= 50)
+                    {
+                        GameObject.Find("ToolGangKnife").GetComponent<GangKnife>().begin();
+                    }
                     if (transform.position.x >= 78)
                     {
                         //boss开始生效
@@ -436,9 +441,13 @@ public class PlayerBase : MonoBehaviour
                         //加载场景2
                         SceneManager.LoadScene("SceneSection2_2", LoadSceneMode.Single);
                     }
-                    else
+                    else if (transform.position.x >= 45)
                     {
-                        GameManager.instance.sectionTwoEnemyBegin(1, 8);
+                        GameManager.instance.sectionTwoEnemyBegin(1, 10);
+                    }
+                    else if (transform.position.x >= 0)
+                    {
+                        GameManager.instance.sectionTwoEnemyBegin(1, 6);
                     }
                     break;
             }
@@ -931,7 +940,7 @@ public class PlayerBase : MonoBehaviour
         animator.SetBool("isStand", false);
     }
 
-    private void stopAttackUp()
+    protected void stopAttackUp()
     {
         if (isAttackUp)
         {
@@ -942,7 +951,7 @@ public class PlayerBase : MonoBehaviour
         }
     }
 
-    private void stopAttack()
+    protected void stopAttack()
     {
         if (isAttack)
         {
@@ -953,7 +962,7 @@ public class PlayerBase : MonoBehaviour
         }
     }
 
-    private void stopJumpAttack()
+    protected void stopJumpAttack()
     {
         if (isJumpAttack)
         {
