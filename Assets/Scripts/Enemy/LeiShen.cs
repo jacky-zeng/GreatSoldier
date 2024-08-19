@@ -237,6 +237,11 @@ public class LeiShen : BaseEnemy
         }
     }
 
+    public bool getIsDie()
+    {
+        return isDie;
+    }
+
     //死亡
     private void die()
     {
@@ -252,7 +257,13 @@ public class LeiShen : BaseEnemy
         //rigi.velocity = new Vector3(0, 0, 0);
         ////敌人摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
+
+        playAudio("Audios/Enemy/LeiShen/leiShenOk");
+
+        CapCollider.enabled = false;
+
         animator.SetTrigger("triggerDie");
-        dieDestroy();
+
+        Time.timeScale = 1;
     }
 }

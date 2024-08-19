@@ -606,7 +606,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u8DF3\u8D77\u653B\u51FB D+J\n"
+  m_Text: "\u8DF3\u8D77\u653B\u51FB I\n"
 --- !u!222 &125705803
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -649,7 +649,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -252.00002, y: 14.157011}
+  m_AnchoredPosition: {x: -252, y: 14.156982}
   m_SizeDelta: {x: 494.5587, y: 83.596}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &141955573
@@ -1514,7 +1514,8 @@ Transform:
   m_LocalPosition: {x: 591, y: 332.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1675843003}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &888111113
@@ -1532,6 +1533,8 @@ MonoBehaviour:
   prefabGhost: {fileID: 5722328396941367787, guid: 13586b211fbfc4a07b01118d66369c0f, type: 3}
   prefabKnife: {fileID: 8705255043989997785, guid: 675d2ce25f359437586bf28939940a20, type: 3}
   prefabElectricGirl: {fileID: 1977989484442370079, guid: d062936d02559432c873fdb730fce29f, type: 3}
+  prefabFire: {fileID: 9011347658960830919, guid: 238fc40ccbb794604b359dacdaf1cb18, type: 3}
+  prefabPangHu: {fileID: 1807629621697119070, guid: 6e4c093ad13be476793d0513ee5ba4a7, type: 3}
   prefabKunBasketBall: {fileID: 8658669159698866797, guid: 07f2a8693cc7b419f822d710af491fb4, type: 3}
   prefabPlayer: {fileID: 8669003451581204957, guid: 6eadd835e7b774386a473c833e642de4, type: 3}
   prefabPlayerGirl: {fileID: 1021194740245718396, guid: cdaa93fee930d4afebe5e0e09f2538bc, type: 3}
@@ -2160,6 +2163,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1536820234}
   m_CullTransparentMesh: 1
+--- !u!1 &1675843002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1675843003}
+  - component: {fileID: 1675843004}
+  m_Layer: 0
+  m_Name: ShadowPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1675843003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1675843002}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -577.1258, y: -330.20865, z: -9.90002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 888111112}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1675843004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1675843002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01f6051f8046c4f3896b8a822f58ae68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shadowPrefab: {fileID: 8541935680593999185, guid: aa79444f2653245b194df0d411b7f561, type: 3}
+  shadowCount: 10
 --- !u!1 &1816452719
 GameObject:
   m_ObjectHideFlags: 0

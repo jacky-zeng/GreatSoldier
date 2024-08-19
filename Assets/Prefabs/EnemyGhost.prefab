@@ -367,9 +367,10 @@ MonoBehaviour:
   JumpHitForce: 260
   flyHitForce: 28
   upPosSpeed: 3
+  byAttackType: 1
   xiFuLeft: {x: 2.5, y: 1.5, z: 0}
   xiFuRight: {x: -2.5, y: 1.5, z: 0}
-  maxBlood: 10
+  maxBlood: 8
   enemyAvatarSprite: {fileID: 0}
   animator: {fileID: 0}
   rigi: {fileID: 0}

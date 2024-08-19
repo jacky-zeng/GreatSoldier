@@ -1240,7 +1240,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &746822619
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3394,7 +3394,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2115085927
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3522,6 +3522,8 @@ MonoBehaviour:
   prefabGhost: {fileID: 5722328396941367787, guid: 13586b211fbfc4a07b01118d66369c0f, type: 3}
   prefabKnife: {fileID: 8705255043989997785, guid: 675d2ce25f359437586bf28939940a20, type: 3}
   prefabElectricGirl: {fileID: 0}
+  prefabFire: {fileID: 0}
+  prefabPangHu: {fileID: 0}
   prefabKunBasketBall: {fileID: 0}
   prefabPlayer: {fileID: 8669003451581204957, guid: 6eadd835e7b774386a473c833e642de4, type: 3}
   prefabPlayerGirl: {fileID: 1021194740245718396, guid: cdaa93fee930d4afebe5e0e09f2538bc, type: 3}
@@ -3644,6 +3646,10 @@ PrefabInstance:
     - target: {fileID: 8658669159698866797, guid: 07f2a8693cc7b419f822d710af491fb4, type: 3}
       propertyPath: m_Name
       value: EnemyKunBasketBall
+      objectReference: {fileID: 0}
+    - target: {fileID: 8658669159698866797, guid: 07f2a8693cc7b419f822d710af491fb4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

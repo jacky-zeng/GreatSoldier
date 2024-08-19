@@ -25,7 +25,7 @@ public class Go : MonoBehaviour
     public void go()
     {
         GetComponent<SpriteRenderer>().enabled = true;
-        GetComponent<AudioSource>().Play();
+        //GetComponent<AudioSource>().Play();
 
         Invoke("goStop", 3);
     }

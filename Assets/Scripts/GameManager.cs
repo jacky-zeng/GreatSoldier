@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
     public GameObject prefabGhost;
     public GameObject prefabKnife;
     public GameObject prefabElectricGirl;
+    public GameObject prefabFire;
+    public GameObject prefabPangHu;
     public GameObject prefabKunBasketBall;
     public GameObject prefabPlayer;
     public GameObject prefabPlayerGirl;
@@ -25,12 +27,14 @@ public class GameManager : MonoBehaviour
     private bool isOkSectionOne3 = false;
 
     private bool isOkSectionTwo1 = false;
+    private bool isOkSectionTwo2 = false;
 
     private Dictionary<string, GameObject> sectionOne1Enemys = new Dictionary<string, GameObject>();
     private Dictionary<string, GameObject> sectionOne2Enemys = new Dictionary<string, GameObject>();
     private Dictionary<string, GameObject> sectionOne3Enemys = new Dictionary<string, GameObject>();
 
     private Dictionary<string, GameObject> sectionTwo1Enemys = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> sectionTwo2Enemys = new Dictionary<string, GameObject>();
 
     private Dictionary<string, bool> isEnemyBeginDict = new Dictionary<string, bool>();
 
@@ -43,6 +47,9 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
+        //Screen.SetResolution(1920, 1080, false);
+        Screen.SetResolution(1600, 900, false);
+
         // 如果实例不存在，则设置为当前实例
         if (instance == null)
         {
@@ -115,6 +122,13 @@ public class GameManager : MonoBehaviour
                     isOkSectionTwo1 = true;
                     sectionTwoLoad(1);
                     //Debug.Log("GameManager " + sceneName);
+                }
+                break;
+            case "SceneSection2_2":
+                if (!isOkSectionTwo2)
+                {
+                    isOkSectionTwo2 = true;
+                    sectionTwoLoad(2);
                 }
                 break;
         }
@@ -190,7 +204,7 @@ public class GameManager : MonoBehaviour
     private void sectionOneLoad(int index)
     {
         //角色加载
-        initPlayer(new Vector3(-2.5f, 0.53f, -4.83f));
+        initPlayer(new Vector3(-2.5f, 2.53f, -4.83f));
        
         int section = 1;
         //敌人gameobject命名 #关卡  ｜第几个敌人
@@ -220,30 +234,50 @@ public class GameManager : MonoBehaviour
     //加载第二关第index部分的敌人
     private void sectionTwoLoad(int index)
     {
-        //角色加载
-        initPlayer(new Vector3(-18.6f, 0.53f, -4.83f));
-
         int section = 2;
         //敌人gameobject命名 #关卡  ｜第几个敌人
         if (index == 1)
         {
+            //角色加载
+            initPlayer(new Vector3(-18.6f, 0.53f, -4.83f));
+
             enemyAdd(section, index, "EnemyKnife#2|1", new Vector3(49.5f, 0.85f, -5f), 2);
             //enemyAdd(section, index, "EnemyKnife#2|2", new Vector3(50.5f, 0.85f, -5f), 2);
             enemyAdd(section, index, "EnemyKnife#2|3", new Vector3(30.5f, 0.85f, -5f), 2);
 
-            enemyAdd(section, index, "EnemyGhost#2|4", new Vector3(30.5f, 0.85f, -5f), 1);
+            enemyAdd(section, index, "EnemyKnife#2|4", new Vector3(30.5f, 0.85f, -5f), 1);
 
             enemyAdd(section, index, "EnemyElectricGirl#2|5", new Vector3(50.5f, 0.85f, 5f), 2);
             enemyAdd(section, index, "EnemyElectricGirl#2|6", new Vector3(50.5f, 0.85f, -5f), 2);
 
-            //enemyAdd(section, index, "EnemyElectricGirl#2|7", new Vector3(68.5f, 0.85f, 5f), 2);
-            enemyAdd(section, index, "EnemyElectricGirl#2|8", new Vector3(69, 0.85f, -5f), 2);
-            enemyAdd(section, index, "EnemyKnife#2|9", new Vector3(70, 0.85f, -3f), 2);
+            //enemyAdd(section, index, "EnemyPangHu#2|7", new Vector3(50.5f, 0.85f, 5f), 2);
+            //enemyAdd(section, index, "EnemyFire#2|7", new Vector3(50.5f, 0.85f, 5f), 2);
+            //enemyAdd(section, index, "EnemyElectricGirl#2|7", new Vector3(63.5f, 0.85f, 5f), 2);
+            enemyAdd(section, index, "EnemyElectricGirl#2|8", new Vector3(63, 0.85f, -5f), 2);
+            enemyAdd(section, index, "EnemyKnife#2|9", new Vector3(62, 0.85f, -3f), 2);
         }
         else if (index == 2)
         {
+            //角色加载
+            initPlayer(new Vector3(-18.6f, 10.53f, -4.83f));
 
+            enemyAdd(section, index, "EnemyPangHu#2|1", new Vector3(13.5f, 0.85f, -3f), 2);
+            enemyAdd(section, index, "EnemyPangHu#2|2", new Vector3(16.5f, 0.85f, -12f), 2);
+            enemyAdd(section, index, "EnemyPangHu#2|3", new Vector3(23.5f, 0.85f, -7f), 2);
+            enemyAdd(section, index, "EnemyPangHu#2|4", new Vector3(26.5f, 0.85f, -9f), 2);
+
+            enemyAdd(section, index, "EnemyFire#2|5", new Vector3(50.5f, 0.85f, -3f), 2);
+            enemyAdd(section, index, "EnemyFire#2|6", new Vector3(50.5f, 0.85f, -12f), 2);
         }
+    }
+
+    public void section2_2_FireLoad()
+    {
+        enemyAdd(2, 2, "EnemyFire#2|7", new Vector3(25f, 0.85f, -3f), 2);
+        enemyAdd(2, 2, "EnemyFire#2|8", new Vector3(25f, 0.85f, -5f), 2);
+        enemyAdd(2, 2, "EnemyFire#2|9", new Vector3(25f, 0.85f, -7f), 2);
+        enemyAdd(2, 2, "EnemyFire#2|10", new Vector3(25f, 0.85f, -9f), 2);
+        enemyAdd(2, 2, "EnemyFire#2|11", new Vector3(25f, 0.85f, -11f), 2);
     }
 
     private void initPlayer(Vector3 pos)
@@ -329,6 +363,16 @@ public class GameManager : MonoBehaviour
                 gameObjectInit = Instantiate(prefabElectricGirl);
                 gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
             }
+            else if (name.StartsWith("EnemyFire"))
+            {
+                gameObjectInit = Instantiate(prefabFire);
+                gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
+            }
+            else if (name.StartsWith("EnemyPangHu"))
+            {
+                gameObjectInit = Instantiate(prefabPangHu);
+                gameObjectInit.transform.localPosition = pos;  //必须使用localPosition
+            }
 
             string gameObjectName = name + "_" + index.ToString();
             gameObjectInit.gameObject.name = gameObjectName;
@@ -338,7 +382,7 @@ public class GameManager : MonoBehaviour
             }
             else if (index == 2)
             {
-
+                sectionTwo2Enemys.Add(gameObjectName, gameObjectInit);
             }
         }
     }
@@ -403,7 +447,7 @@ public class GameManager : MonoBehaviour
     }
 
     //Player.cs调用该方法（player走到一定位置，触发敌人开始）
-    public void sectionTwoEnemyBegin(int index, int max)
+    public void sectionTwoEnemyBegin(int index, int max, bool isAttackRightNow = false)
     {
         string key = "2_" + index + "_" + max;
         if (isEnemyBeginDict.ContainsKey(key))
@@ -434,6 +478,14 @@ public class GameManager : MonoBehaviour
                     {
                         sectionTwo1Enemy.Value.GetComponent<ElectricGirl>().begin();
                     }
+                    else if (sectionTwo1Enemy.Key.StartsWith("EnemyFire"))
+                    {
+                        sectionTwo1Enemy.Value.GetComponent<Fire>().begin();
+                    }
+                    else if (sectionTwo1Enemy.Key.StartsWith("EnemyPangHu"))
+                    {
+                        sectionTwo1Enemy.Value.GetComponent<PangHu>().begin();
+                    }
                     else if (sectionTwo1Enemy.Key.StartsWith("EnemyKunBasketBall"))
                     {
                         sectionTwo1Enemy.Value.GetComponent<KunBasketBall>().begin();
@@ -444,7 +496,25 @@ public class GameManager : MonoBehaviour
         }
         else if (index == 2)
         {
-
+            foreach (KeyValuePair<string, GameObject> sectionTwo2Enemy in sectionTwo2Enemys)
+            {
+                int enemy = int.Parse(sectionTwo2Enemy.Key.Split("_")[0].Split("|")[1]);
+                if (enemy <= max)
+                {
+                    if (sectionTwo2Enemy.Key.StartsWith("EnemyKnife"))
+                    {
+                        sectionTwo2Enemy.Value.GetComponent<Knife>().begin();
+                    }
+                    else if (sectionTwo2Enemy.Key.StartsWith("EnemyFire"))
+                    {
+                        sectionTwo2Enemy.Value.GetComponent<Fire>().begin(isAttackRightNow);
+                    }
+                    else if (sectionTwo2Enemy.Key.StartsWith("EnemyPangHu"))
+                    {
+                        sectionTwo2Enemy.Value.GetComponent<PangHu>().begin();
+                    }
+                }
+            }
         }
     }
 
@@ -492,7 +562,7 @@ public class GameManager : MonoBehaviour
             }
             else if (index == 2)
             {
-
+                sectionTwo2Enemys.Remove(gameObjectName);
             }
         }
     }
@@ -541,7 +611,14 @@ public class GameManager : MonoBehaviour
         }
         else if (index == 2)
         {
-            
+            if (sectionTwo2Enemys.Count == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         return false;
     }

@@ -18,6 +18,12 @@ public class StartGame : MonoBehaviour
 
     private bool isBegin = false;
 
+    private void Awake()
+    {
+        //Screen.SetResolution(1920, 1080, false);
+        Screen.SetResolution(1600, 900, false);
+    }
+
     // Use this for initialization
     void Start()
     {

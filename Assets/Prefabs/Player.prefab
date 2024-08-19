@@ -317,10 +317,13 @@ MonoBehaviour:
   moveSpeed: 6
   cameraMoveSpeed: 15
   timeRate: 0.3
+  dashTime: 0.3
+  dashCoolDown: 2
+  dashSpeed: 30
+  isDashing: 0
   attackObj: {fileID: 3226347918194537952}
   jumpAttackObj: {fileID: 27703449273423617}
   jumpForce: 18
-  maxBlood: 5
 --- !u!54 &4028958079334166933
 Rigidbody:
   m_ObjectHideFlags: 0

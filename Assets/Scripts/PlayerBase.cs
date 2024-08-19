@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -5,13 +6,16 @@ using UnityEngine.UI;
 public class PlayerBase : MonoBehaviour
 {
     #region 变量定义
+    protected bool isDisableAction = false; //是否禁用用户操作
     private bool isPlayerGirl = false;
+    private bool isSection2End = false;
 
     private int horizontal = 0;
     private int vertical = 0;
 
     public float moveSpeed = 6f;
-    public float cameraMoveSpeed = 15f;
+    protected float cameraMoveSpeed = 8.5f;
+    protected float cameraMoveSpeedAuto = 15f;
     private bool isOnGround = false;
     public float timeRate = 0.3f;
 
@@ -19,6 +23,17 @@ public class PlayerBase : MonoBehaviour
     protected GameObject canvasTimer;
 
     private AudioSource audioSource;
+
+    [Header("Dash参数")]
+    public float dashTime;         //冲锋时长
+    private float dashTimeLeft;    //冲锋剩余时间
+    private float lastDash = -10f; //上一次dash时间点
+    public float dashCoolDown;
+    public float dashSpeed;
+    public bool isDashing;
+
+    private bool clickDash = false; //玩家按了闪避
+    private float dashFillTime = 0;
 
     //相机移动方向 -1向左 0静止 1向右
     //private int cameraDirectionMove = 0;
@@ -34,6 +49,9 @@ public class PlayerBase : MonoBehaviour
 
     protected Rigidbody rigiBody;
 
+    protected bool isWalk = false;             //是否正在移动
+    protected bool isStand = false;            //是否是站着
+
     //攻击
     public GameObject attackObj;
     public GameObject jumpAttackObj;
@@ -42,7 +60,7 @@ public class PlayerBase : MonoBehaviour
     //普通攻击
     private bool isAttack = false;             //是否正在攻击
     private int attackStep = 0;                //在哪一个攻击连招
-    private float attackMaxDuringTime = 0.5f;  //攻击持续最大时间
+    private float attackMaxDuringTime = 0.8f;  //攻击持续最大时间
     private float attackDuringTime = 0;        //攻击已持续时间
 
     //放血攻击
@@ -54,7 +72,7 @@ public class PlayerBase : MonoBehaviour
     private float attackUpMaxDuringTime = 0.8f;  //攻击持续最大时间
     private float attackUpDuringTime = 0;        //攻击已持续时间
 
-    private float attackDirectionMaxDuringTime = 0.3f;  //攻击持续最大时间 （方向）
+    private float attackDirectionMaxDuringTime = 0.2f;  //攻击持续最大时间 （方向）
     private float attackDirectionDuringTime = 0;        //攻击已持续时间（方向）
 
     //跳跃攻击
@@ -62,13 +80,13 @@ public class PlayerBase : MonoBehaviour
     public float jumpForce = 18f;
 
     //起飞（可以连招）攻击
-    private int attackFlyStep = 0;
+    //private int attackFlyStep = 0;
     private bool isAttackFly = false;
     private float flyForce = 18f;
-    private float attackFlyDuringTime = 0;         //已持续时间
-    private float attackFlyMaxDuringTime = 1.8f;   //在该时间段内，按了 sd+攻击  才能触发起飞攻击
+    //private float attackFlyDuringTime = 0;         //已持续时间
+    //private float attackFlyMaxDuringTime = 1.8f;   //在该时间段内，按了 sd+攻击  才能触发起飞攻击
 
-    //收到伤害
+    //受到伤害
     //受到了几次伤害
     protected float hitDamage = 0;
     //总血量
@@ -77,9 +95,12 @@ public class PlayerBase : MonoBehaviour
     protected bool isHit = false;           //受到普通攻击
     protected bool isHitHeavy = false;      //受到重攻击
     protected bool isHitJump = false;       //受到跳跃攻击
-    protected bool isHitElectric = false;   //受到电击攻击
     //血条
     private Image bloodBar;
+    //闪避CD
+    private Image sharkBar;
+    //结束字幕
+    private RectTransform txtEnd;
 
     //相机
     private Transform transformCamera;
@@ -90,14 +111,20 @@ public class PlayerBase : MonoBehaviour
 
     private bool isCameraActionEnd = false; //是否运镜结束
 
+    private bool isCameraMove = true;
+
     private GameObject mapStage;
+
+    public float animationDuration = 30f; // 动画持续时间
+
+    //private GameObject manPlayer;
 
     #endregion
 
     #region 初始化
     protected void BaseAwake()
     {
-        if(transform.Find("AttackKnife") != null)
+        if (transform.Find("AttackKnife") != null)
         {
             isPlayerGirl = true;
         }
@@ -158,6 +185,14 @@ public class PlayerBase : MonoBehaviour
                 bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
                 transformCamera.position = new Vector3(-5.5f, transformCamera.position.y, transformCamera.position.z);
                 break;
+            case "SceneSection2_2":
+                //GameManager 会 initPlayer
+                hitDamage = GameManager.instance.getPlayerHitDamage();
+                //血条改变
+                bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
+
+                transformCamera.position = new Vector3(-5.5f, transformCamera.position.y, transformCamera.position.z);
+                break;
         }
     }
 
@@ -168,21 +203,24 @@ public class PlayerBase : MonoBehaviour
 
         bloodBar = GameObject.Find("Canvas").transform.Find("PlayerHeath")
             .transform.Find("PlayerHealthBg").transform.Find("bloodBar").GetComponent<Image>();
+
+        sharkBar = GameObject.Find("Canvas").transform.Find("PlayerHeath").transform.Find("sharkBar").GetComponent<Image>();
+
         mapStage = GameObject.Find("mapStage");
-        
+
         canvasContinue.SetActive(false);
         canvasTimer.SetActive(false);
 
-        if(isPlayerGirl)
+        if (isPlayerGirl)
         {
             GameObject.Find("Canvas").transform.Find("PlayerHeath")
            .GetComponent<Image>().sprite = Resources.Load<Sprite>("Images/PlayerGirl/blood_2p") as Sprite;
-        } else
+        }
+        else
         {
             GameObject.Find("Canvas").transform.Find("PlayerHeath")
            .GetComponent<Image>().sprite = Resources.Load<Sprite>("Images/Player/blood_1p") as Sprite;
         }
-       
 
         Debug.Log((canvasContinue == null ? "canvasContinue is null" : " canvasContinue") + (bloodBar == null ? "bloodBar is null" : " bloodBar") + (mapStage == null ? "mapStage is null" : " mapStage"));
     }
@@ -252,40 +290,44 @@ public class PlayerBase : MonoBehaviour
                     posX = 72.5f;
                 }
             }
+            else if (sceneName == "SceneSection2_2")
+            {
+                if (transform.position.x <= -5.5f)
+                {
+                    posX = -5.5f;
+                }
+                else if (transform.position.x >= 68.7f)
+                {
+                    posX = 68.7f;
+                }
+            }
 
+            /**相机x轴跟随角色（偏移相机中心点一定距离，镜头才跟随）**/
             Vector3 targetPosition = new Vector3(posX, posY, transformCameraZ);
+            if(sceneName == "SceneSection1_2")
+            {
+                isCameraMove = true;
+            } else
+            {
+                if (posX <= currentPosition.x - 7 || posX >= currentPosition.x + 5)
+                {
+                    isCameraMove = true;
+                }
+                else if (Mathf.Abs(currentPosition.x - targetPosition.x) <= 0.5f) //说明基本移动到位
+                {
+                    isCameraMove = false;
+                }
+            }
+            
 
-            // 计算移动的方向和距离
-            Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-            Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
-            transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
+            if (isCameraMove)
+            {
+                // 计算移动的方向和距离
+                Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
+                Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+                transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
+            }
         }
-
-        /**相机x轴跟随角色（增加偏移）**/
-        //float tempX = transformCamera.position.x - transform.position.x;
-        //if (Mathf.Abs(tempX) >= 25)//相机和角色位置相差一定距离的时候
-        //{
-        //    cameraDirectionMove = tempX > 0 ? -1 : 1;
-        //}
-        //if (cameraDirectionMove != 0)
-        //{
-        //    Vector3 currentPosition = transformCamera.position;
-        //    Vector3 targetPosition = new Vector3(transform.position.x, transformCameraY, transformCameraZ);
-        //    targetPosition += new Vector3(cameraDirectionMove > 0 ? 50 : -50, 0, 0);
-        //    // 计算移动的方向和距离
-        //    Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-        //    Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
-
-        //    // 移动相机
-        //    transformCamera.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
-
-        //    //Debug.Log(currentPosition.x - targetPosition.x);
-        //    // 移动到位后，停止移动
-        //    if (Mathf.Abs(Mathf.Abs(currentPosition.x - targetPosition.x) - 25) <= 3)
-        //    {
-        //        cameraDirectionMove = 0;
-        //    }
-        //}
     }
 
     // Update is called once per frame
@@ -313,7 +355,7 @@ public class PlayerBase : MonoBehaviour
 
                         //// 计算移动的方向和距离
                         Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-                        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+                        Vector3 moveDirection = directionToTarget * cameraMoveSpeedAuto * Time.deltaTime;
                         transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
                     }
                     break;
@@ -332,7 +374,7 @@ public class PlayerBase : MonoBehaviour
 
                         //// 计算移动的方向和距离
                         Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-                        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+                        Vector3 moveDirection = directionToTarget * cameraMoveSpeedAuto * Time.deltaTime;
                         transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
 
                     }
@@ -354,13 +396,16 @@ public class PlayerBase : MonoBehaviour
 
                         //// 计算移动的方向和距离
                         Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-                        Vector3 moveDirection = directionToTarget * cameraMoveSpeed * Time.deltaTime;
+                        Vector3 moveDirection = directionToTarget * cameraMoveSpeedAuto * Time.deltaTime;
                         transformCamera.position = Vector3.MoveTowards(transformCamera.position, targetPosition, moveDirection.magnitude);
                     }
                     break;
                 case "SceneSection2_1":
                     isCameraActionEnd = true;
                     mapStage.GetComponent<mapStage>().begin();
+                    break;
+                case "SceneSection2_2":
+                    isCameraActionEnd = true;
                     break;
             }
         }
@@ -397,7 +442,7 @@ public class PlayerBase : MonoBehaviour
                     }
                     break;
                 case "SceneSection1_2":
-                    bool isSectionOneEnemyAllDied2 = GameManager.instance.isSectionOneEnemyAllDied(2) && GameObject.Find("EnemyLeiShen") == null;
+                    bool isSectionOneEnemyAllDied2 = GameManager.instance.isSectionOneEnemyAllDied(2) && GameObject.Find("EnemyLeiShen").GetComponent<LeiShen>().getIsDie();
                     if (isSectionOneEnemyAllDied2 && !GameObject.Find("Go").GetComponent<Go>().getIsOn())
                     {
                         GameObject.Find("Go").GetComponent<Go>().begin();
@@ -421,7 +466,7 @@ public class PlayerBase : MonoBehaviour
                     }
                     break;
                 case "SceneSection1_3":
-                    if(transform.position.x >= 50)
+                    if (transform.position.x >= 50)
                     {
                         GameObject.Find("ToolGangKnife").GetComponent<GangKnife>().begin();
                     }
@@ -432,14 +477,16 @@ public class PlayerBase : MonoBehaviour
                     }
                     break;
                 case "SceneSection2_1":
-                    if (transform.position.x >= 100)
+                    if (!isDisableAction && transform.position.x >= 66 && GameManager.instance.isSectionTwoEnemyAllDied(1))
                     {
-                        //保存一下当前player的hitDamage（为了进入下一个场景时，player的hitDamage不变）
-                        GameManager.instance.setPlayerHitDamage(hitDamage);
-                        //清空对象池
-                        ObjectPool.Instance.init();
-                        //加载场景2
-                        SceneManager.LoadScene("SceneSection2_2", LoadSceneMode.Single);
+                        isDisableAction = true;
+                        GameObject.Find("wallEnd").GetComponent<BoxCollider>().enabled = false;
+                        GameObject.Find("groundEnd").GetComponent<BoxCollider>().enabled = false;
+
+                        jump();
+                        jumpAttack();
+
+                        Invoke("beginSection2_2", 1f);
                     }
                     else if (transform.position.x >= 45)
                     {
@@ -450,8 +497,58 @@ public class PlayerBase : MonoBehaviour
                         GameManager.instance.sectionTwoEnemyBegin(1, 6);
                     }
                     break;
+                case "SceneSection2_2":
+                    if (!isDisableAction && transform.position.x >= 70 && GameManager.instance.isSectionTwoEnemyAllDied(2))
+                    {
+                        isDisableAction = true;
+
+                        //保存一下当前player的Z轴位置（为了进入下一个场景时，player位置不变）
+                        GameManager.instance.setPlayerPosZ(transform.position.z);
+                        //保存一下当前player的hitDamage（为了进入下一个场景时，player的hitDamage不变）
+                        GameManager.instance.setPlayerHitDamage(hitDamage);
+                        //清空对象池
+                        ObjectPool.Instance.init();
+
+                        GameObject.Find("MeiLuXing").GetComponent<MeiLuXing>().gameEnd();
+
+                        stopAttackCircle();
+                        stopAttackFly();
+                        stopAttack();
+                        stopAttackUp();
+                        stopJumpAttack();
+
+                        isWalk = false;
+                        animator.SetBool("isWalk", isWalk);
+                        isStand = true;
+                        animator.SetBool("isStand", isStand);
+
+                        Invoke("SceneSection2_2_end", 5f);
+                        //todo 下一关
+                    }
+                    else if (isSection2End)
+                    {
+                        moveToTargetPos(new Vector3(96.3f, 1.666f, -1.39f));
+                    }
+                    else if (transform.position.x >= 0)
+                    {
+                        GameManager.instance.sectionTwoEnemyBegin(2, 6);
+                    }
+                    break;
             }
 
+            if(clickDash)
+            {
+                dashFillTime += Time.deltaTime;
+                if(dashFillTime <= dashCoolDown)
+                {
+                    sharkBar.fillAmount = dashFillTime / dashCoolDown;
+                }
+                else
+                {
+                    clickDash = false;
+                    dashFillTime = 0;
+                }
+            }
             //血条改变
             bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
             //bloodBar.fillAmount = Mathf.Lerp(bloodBar.fillAmount, (maxBlood - hitDamage) / maxBlood, hitDamage * Time.deltaTime);
@@ -494,17 +591,118 @@ public class PlayerBase : MonoBehaviour
                         }
                     }
 
+                    //使玩家不会被击飞很远
+                    if (Mathf.Abs(rigiBody.velocity.x) >= 2 * moveSpeed)
+                    {
+                        rigiBody.velocity = new Vector3(rigiBody.velocity.x / Mathf.Abs(rigiBody.velocity.x) * moveSpeed * 1.2f, rigiBody.velocity.y, rigiBody.velocity.z);
+                    }
+
                     action();
                 }
             }
         }
     }
+
+    protected void BaseFixUpdate()
+    {
+        Dash();
+    }
     #endregion
+
+    //加载第2关第2部分
+    private void beginSection2_2()
+    {
+        //保存一下当前player的hitDamage（为了进入下一个场景时，player的hitDamage不变）
+        GameManager.instance.setPlayerHitDamage(hitDamage);
+        //清空对象池
+        ObjectPool.Instance.init();
+        //加载场景2
+        SceneManager.LoadScene("SceneSection2_2", LoadSceneMode.Single);
+    }
+
+    //第2关结束
+    private void SceneSection2_2_end()
+    {
+        isSection2End = true;
+        txtEnd = GameObject.Find("Canvas").transform.Find("txtEnd").GetComponent<RectTransform>();
+        MusicManager.instance.playAudio("Audios/Background/section1End");
+        Debug.Log("SceneSection2_2_end txtEnd.position.y" + txtEnd.position.y);
+        StartCoroutine(FadeInText());
+
+        //manPlayer = GameObject.Find("manPlayer");
+        //manPlayer.transform.position = new Vector3(60.3f, 1.666f, -1.39f);
+        //manPlayer.GetComponent<Animator>().SetBool("isRun", true);
+        //StartCoroutine(manPlayerMoveToTargetPos());
+    }
+
+    private void moveToTargetPos(Vector3 targetPosition)
+    {
+        //朝向
+        GetComponent<SpriteRenderer>().flipX = false;
+
+        stopAttackCircle();
+        stopAttackFly();
+        stopAttack();
+        stopAttackUp();
+        stopJumpAttack();
+
+        isStand = false;
+        animator.SetBool("isStand", isStand);
+
+        isWalk = true;
+        animator.SetBool("isWalk", isWalk);
+
+        // 计算移动的方向和距离
+        Vector3 directionToTarget = (targetPosition - transform.position).normalized;
+        Vector3 moveDirection = directionToTarget * (moveSpeed / 1.2f) * Time.deltaTime;
+
+        // 移动
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveDirection.magnitude);
+    }
+
+    //字幕控制
+    IEnumerator FadeInText()
+    {
+        float elapsedTime = 0f;
+
+        while (elapsedTime < animationDuration && txtEnd.position.y <= 200)
+        {
+            elapsedTime += Time.deltaTime;
+            txtEnd.position = new Vector3(txtEnd.position.x, txtEnd.position.y + 8, txtEnd.position.z);
+            yield return null;
+        }
+
+        txtEnd.position = new Vector3(txtEnd.position.x, 200, txtEnd.position.z);
+    }
+
+    ////移动man
+    //IEnumerator manPlayerMoveToTargetPos()
+    //{
+    //    float elapsedTime = 0f;
+    //    manPlayer.transform.position = new Vector3(60.3f, 1.666f, -1.39f);
+
+    //    Debug.Log("manPlayerMoveToTargetPos==begin =" + manPlayer.transform.position.x);
+
+    //    Vector3 targetPosition = new Vector3(96.3f, 1.666f, -1.39f);
+
+    //    while (elapsedTime < animationDuration)
+    //    {
+    //        elapsedTime += Time.deltaTime;
+    //        // 计算移动的方向和距离
+    //        Vector3 directionToTarget = (targetPosition - manPlayer.transform.position).normalized;
+    //        Vector3 moveDirection = directionToTarget * (moveSpeed / 1.2f) * Time.deltaTime;
+
+    //        // 移动
+    //        manPlayer.transform.position = Vector3.MoveTowards(manPlayer.transform.position, targetPosition, moveDirection.magnitude);
+    //        yield return null;
+    //    }
+    //    Debug.Log("manPlayerMoveToTargetPos===" );
+    //}
 
     #region 动作
     private void action()
     {
-        if(isHitElectric) //被电击时，无法操作
+        if (isDisableAction) //被电击时，无法操作
         {
             return;
         }
@@ -535,80 +733,102 @@ public class PlayerBase : MonoBehaviour
             horizontal = 0;
         }
 
-        bool isGetMouseButtonDown0 = Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.J);
-        bool isButtonAttackCircle = isGetMouseButtonDown0 && Input.GetKey(KeyCode.K);
-        if((isButtonAttackCircle || isAttackCircle) && (hitDamage + 2) < maxBlood)
+        bool isAttackButtonDown = Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.J);
+        bool isButtonAttackCircle = isAttackButtonDown && Input.GetKey(KeyCode.K);
+        if ((isButtonAttackCircle || isAttackCircle) && (hitDamage + 2) < maxBlood)
         {
             attackCircle();
         }
         else if (isOnGround == true && isHitHeavy == false && isHitJump == false) //在地面上
         {
-            bool tempIsAttackFly = false;
-            attackFlyDuringTime += Time.deltaTime;
-            if (attackFlyDuringTime >= attackFlyMaxDuringTime)
-            {
-                attackFlyStep = 0;
-                attackFlyDuringTime = 0;
-            }
+            //bool tempIsAttackFly = false;
+            //attackFlyDuringTime += Time.deltaTime;
+            //if (attackFlyDuringTime >= attackFlyMaxDuringTime)
+            //{
+            //    attackFlyStep = 0;
+            //    attackFlyDuringTime = 0;
+            //}
 
-            if (attackFlyStep == 0)
-            {
-                if (vertical == -1)
-                {
-                    attackFlyStep = 1;
-                }
-                else
-                {
-                    attackFlyStep = 0;
-                }
-            }
-            else if (attackFlyStep == 1)
-            {
-                if (horizontal != 0)
-                {
-                    //改变player朝向
-                    spriteRenderer.flipX = (horizontal > 0 ? false : true);
-                    attackFlyStep = 2;
-                }
-                else
-                {
-                    attackFlyStep = 0;
-                }
-            }
-            else if (attackFlyStep == 2)
-            {
-                if (isGetMouseButtonDown0)
-                {
-                    //满足起飞攻击条件
-                    tempIsAttackFly = attackFly();
-                }
-            }
+            //if (attackFlyStep == 0)
+            //{
+            //    if (vertical == -1)
+            //    {
+            //        attackFlyStep = 1;
+            //    }
+            //    else
+            //    {
+            //        attackFlyStep = 0;
+            //    }
+            //}
+            //else if (attackFlyStep == 1)
+            //{
+            //    if (horizontal != 0)
+            //    {
+            //        //改变player朝向
+            //        spriteRenderer.flipX = (horizontal > 0 ? false : true);
+            //        attackFlyStep = 2;
+            //    }
+            //    else
+            //    {
+            //        attackFlyStep = 0;
+            //    }
+            //}
+            //else if (attackFlyStep == 2)
+            //{
+            //    if (isAttackButtonDown)
+            //    {
+            //        //满足起飞攻击条件
+            //        tempIsAttackFly = attackFly();
+            //    }
+            //}
 
-            if (!tempIsAttackFly)
+
+
+            //if (!tempIsAttackFly)
+            //{
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.K))   //跳跃
             {
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.K))   //跳跃
+                jump();
+            }
+            else if (vertical == 1 && horizontal == 0 && (isAttackUp || isAttackButtonDown)) //上挑攻击：正在攻击过程中 或者 按了攻击键
+            {
+                attackUp(isAttackButtonDown);
+            }
+            else if (isAttack || isAttackButtonDown)  //普通攻击：正在攻击过程中 或者 按了攻击键
+            {
+                attackNormal(isAttackButtonDown);
+            }
+            else if (Input.GetKeyDown(KeyCode.I))
+            {
+                attackFly();
+            }
+            else if (Input.GetKeyDown(KeyCode.L))
+            {
+                if (Time.time >= (lastDash + dashCoolDown))
                 {
-                    jump();
-                }
-                else if (vertical == 1 && horizontal == 0 && (isAttackUp || isGetMouseButtonDown0)) //上挑攻击：正在攻击过程中 或者 按了攻击键
-                {
-                    attackUp(isGetMouseButtonDown0);
-                }
-                else if (isAttack || isGetMouseButtonDown0)  //普通攻击：正在攻击过程中 或者 按了攻击键
-                {
-                    attackNormal(isGetMouseButtonDown0);
-                }
-                else  //移动
-                {
-                    move();
+                    //可以执行dash
+                    ReadyToDash();
                 }
             }
+            else  //移动
+            {
+                move();
+            }
+            //}
         }
         else //在空中
         {
-            if (isGetMouseButtonDown0) //空中攻击
+            if (isAttackButtonDown) //空中攻击
             {
                 jumpAttack();
+            }
+            else if (Input.GetKeyDown(KeyCode.L))
+            {
+                if (Time.time >= (lastDash + dashCoolDown))
+                {
+                    //可以执行dash
+                    ReadyToDash();
+                }
             }
             else
             {
@@ -659,6 +879,50 @@ public class PlayerBase : MonoBehaviour
         }
     }
 
+    private void ReadyToDash()
+    {
+        isDashing = true;
+
+        dashTimeLeft = dashTime;
+
+        lastDash = Time.time;
+
+        sharkBar.fillAmount = 1;
+    }
+
+    private void Dash()
+    {
+        if (isDashing)
+        {
+            clickDash = true;
+            //冲锋时，无敌帧
+            setUnmatched(dashTime);
+
+            int direct = spriteRenderer.flipX ? -1 : 1;
+            if (dashTimeLeft > 0)
+            {
+                //if (rigiBody.velocity.y > 0 && !isOnGround)
+                //{
+                //    rigiBody.velocity = new Vector2(dashSpeed * direct, jumpForce);//在空中Dash向上
+                //}
+                rigiBody.velocity = new Vector2(dashSpeed * direct, rigiBody.velocity.y);//地面Dash
+
+                dashTimeLeft -= Time.deltaTime;
+
+                ShadowPool.instance.GetFormPool();
+            }
+            if (dashTimeLeft <= 0)
+            {
+                isDashing = false;
+                //if (!isOnGround)
+                //{
+                //    //目的为了在空中结束 Dash 的时候可以接一个小跳跃。根据自己需要随意删减调整
+                //    rigiBody.velocity = new Vector2(dashSpeed * direct, jumpForce);
+                //}
+            }
+        }
+    }
+
     private void move()
     {
         stopAttack();
@@ -671,7 +935,11 @@ public class PlayerBase : MonoBehaviour
 
         if (horizontal != 0 || vertical != 0) //在 水平/垂直 移动
         {
-            animator.SetBool("isStand", false);
+            if(isStand)
+            {
+                isStand = false;
+                animator.SetBool("isStand", isStand);
+            }
             //角色朝向
             if (horizontal != 0)
             {
@@ -680,18 +948,31 @@ public class PlayerBase : MonoBehaviour
             //获取和设置刚体的线性速度
             rigiBody.velocity = new Vector3(horizontal * moveSpeed, 0, vertical * moveSpeed);
 
-            animator.SetBool("isWalk", true);
+            if(!isWalk)
+            {
+                isWalk = true;
+                animator.SetBool("isWalk", isWalk);
+            }
         }
         else
         {
             rigiBody.velocity = new Vector3(0, rigiBody.velocity.y, 0);
 
-            animator.SetBool("isWalk", false);
-            animator.SetBool("isStand", true);
+            if(isWalk)
+            {
+                isWalk = false;
+                animator.SetBool("isWalk", isWalk);
+            }
+           
+            if(!isStand)
+            {
+                isStand = true;
+                animator.SetBool("isStand", isStand);
+            }
         }
     }
 
-    private void attackNormal(bool isGetMouseButtonDown0)
+    private void attackNormal(bool isAttackButtonDown)
     {
         stopWalkAndStand();
         stopAttackUp();
@@ -699,8 +980,11 @@ public class PlayerBase : MonoBehaviour
         //使攻击的武器朝向和player保持一致
         attackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
 
-        if (isGetMouseButtonDown0)
+        attackDuringTime += Time.deltaTime;
+
+        if (isAttackButtonDown && attackDuringTime > attackDirectionMaxDuringTime)
         {
+            attackDuringTime = 0;
             if (animator.GetCurrentAnimatorStateInfo(0).IsName("attackNormal1"))
             {
                 attackStep = 2;
@@ -721,23 +1005,19 @@ public class PlayerBase : MonoBehaviour
                 attackStep = 5;
                 animator.SetInteger("attackStep", attackStep);
             }
+            else if (animator.GetCurrentAnimatorStateInfo(0).IsName("attackNormal5"))
+            {
+                attackStep = 1;
+                animator.SetInteger("attackStep", attackStep);
+            }
             else
             {
                 attackStep = 1;
                 animator.SetInteger("attackStep", attackStep);
             }
-
-            if (attackDuringTime > 0) //只要不停按攻击，就延长攻击持续时间
-            {
-                attackDuringTime -= 0.3f;
-            }
-            else if (attackDuringTime < 0)
-            {
-                attackDuringTime = 0;
-            }
         }
 
-        attackDuringTime += Time.deltaTime;
+        
         if (attackDuringTime > attackMaxDuringTime)     //攻击持续时间不足
         {
             //Log(" 攻击结束：" + attackDuringTime + " 已持续攻击的时间：" + attackDuringTime + " attackStep=" + attackStep, true);
@@ -772,7 +1052,7 @@ public class PlayerBase : MonoBehaviour
 
     private void attackCircle()
     {
-        if(isDie)
+        if (isDie)
         {
             return;
         }
@@ -791,13 +1071,13 @@ public class PlayerBase : MonoBehaviour
             //使攻击的武器朝向和player保持一致
             attackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
 
-            if(isPlayerGirl)
+            if (isPlayerGirl)
             {
                 //给角色一个瞬间当前朝向的力
                 rigiBody.AddForce(new Vector3(spriteRenderer.flipX ? -32 : 32, 0, 0), ForceMode.Impulse);
                 playAudio("Audios/Tool/wumanAttack1");
             }
-           
+
             animator.SetBool("isAttackCircle", isAttackCircle);
 
             //1秒后，结束放血攻击
@@ -816,14 +1096,14 @@ public class PlayerBase : MonoBehaviour
         }
     }
 
-    private void attackUp(bool isGetMouseButtonDown0)
+    private void attackUp(bool isAttackButtonDown)
     {
         stopWalkAndStand();
         stopAttack();
         //使攻击的武器朝向和player保持一致
         attackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
 
-        if (isGetMouseButtonDown0)
+        if (isAttackButtonDown)
         {
             if (animator.GetCurrentAnimatorStateInfo(0).IsName("attackUp1"))
             {
@@ -893,24 +1173,26 @@ public class PlayerBase : MonoBehaviour
 
             //使攻击的武器朝向和player保持一致
             attackObj.transform.localScale = new Vector3(spriteRenderer.flipX ? -1 : 1, 1, 1);
-            //玩家向上移动一点，便于起跳 （z轴加一点，抵消按S键导致的少量位移）
+            //玩家向上移动一点，便于起跳
             rigiBody.velocity = new Vector3(rigiBody.velocity.x, rigiBody.velocity.y, 0);
-            transform.position = new Vector3(transform.position.x, transform.position.y + 0.3f, transform.position.z + 1f);
+            transform.position = new Vector3(transform.position.x, transform.position.y + 0.3f, transform.position.z);
             //给角色一个瞬间斜向上的力
             rigiBody.AddForce(new Vector3(spriteRenderer.flipX ? -flyForce : flyForce, flyForce, 0), ForceMode.Impulse);
         }
         //重置
-        attackFlyStep = 0;
-        attackFlyDuringTime = 0;
+        //attackFlyStep = 0;
+        //attackFlyDuringTime = 0;
         return isAttackFly;
     }
 
-    private void stopAttackFly()
+    protected void stopAttackFly()
     {
         if (isAttackFly)
         {
             isAttackFly = false;
-            animator.SetBool("isStand", true);
+
+            isStand = true;
+            animator.SetBool("isStand", isStand);
             animator.SetBool("isAttackFly", false);
         }
     }
@@ -925,7 +1207,7 @@ public class PlayerBase : MonoBehaviour
         //跳跃动画 (暂无)
     }
 
-    private void stopAttackCircle()
+    protected void stopAttackCircle()
     {
         if (isAttackCircle)
         {
@@ -936,8 +1218,17 @@ public class PlayerBase : MonoBehaviour
 
     private void stopWalkAndStand()
     {
-        animator.SetBool("isWalk", false);
-        animator.SetBool("isStand", false);
+        if(isWalk)
+        {
+            isWalk = false;
+            animator.SetBool("isWalk", isWalk);
+        }
+
+        if(isStand)
+        {
+            isStand = false;
+            animator.SetBool("isStand", isStand);
+        }
     }
 
     protected void stopAttackUp()
@@ -967,7 +1258,8 @@ public class PlayerBase : MonoBehaviour
         if (isJumpAttack)
         {
             isJumpAttack = false;
-            animator.SetBool("isStand", true);
+            isStand = true;
+            animator.SetBool("isStand", isStand);
             animator.SetBool("isJumpAttack", false);
         }
     }
@@ -1017,7 +1309,7 @@ public class PlayerBase : MonoBehaviour
         isUnmatched = true;
         unmatchedSecond = sec;
 
-        if(!isDotSetTransparent)  //过关时只是无敌，不会变透明
+        if (!isDotSetTransparent)  //过关时只是无敌，不会变透明
         {
             //变透明一点
             Color currentColor = GetComponent<SpriteRenderer>().material.color;

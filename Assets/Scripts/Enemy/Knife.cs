@@ -207,16 +207,10 @@ public class Knife : BaseEnemy
         //rigi.velocity = new Vector3(0, 0, 0);
         ////敌人摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
-        if(byAttackType == 2)
-        {
-            animator.SetTrigger("triggerDieKnife");
-        } else
-        {
-            animator.SetTrigger("triggerDie");
-        }
 
-        //playAudio("Audios/Tool/manDie");
+        playAudio("Audios/Tool/manHit");
 
-        dieDestroy();
+        CapCollider.enabled = false;
+        StartCoroutine(diedDelay(1, byAttackType));
     }
 }

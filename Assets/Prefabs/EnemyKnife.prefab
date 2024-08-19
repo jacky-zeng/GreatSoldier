@@ -425,7 +425,7 @@ MonoBehaviour:
   byAttackType: 1
   xiFuLeft: {x: 2.5, y: 1.5, z: 0}
   xiFuRight: {x: -2.5, y: 1.5, z: 0}
-  maxBlood: 20
+  maxBlood: 8
   enemyAvatarSprite: {fileID: 0}
   animator: {fileID: 0}
   rigi: {fileID: 0}

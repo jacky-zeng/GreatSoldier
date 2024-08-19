@@ -219,8 +219,11 @@ public class Ghost : BaseEnemy
         //rigi.velocity = new Vector3(0, 0, 0);
         ////敌人摆正
         //transform.rotation = Quaternion.Euler(0, 0, 0);
-        animator.SetTrigger("triggerDie");
 
-        dieDestroy();
+        CapCollider.enabled = false;
+        playAudio("Audios/Tool/manHit");
+
+        StartCoroutine(diedDelay(1));
     }
+
 }

@@ -112,7 +112,7 @@ public class BaseEnemy : MonoBehaviour
         //测试时，一刀杀敌
         if (PlayerPrefs.GetInt("isTest", 0) == 1)
         {
-            maxBlood = 1;
+            maxBlood = 2;
         }
     }
 
@@ -171,7 +171,7 @@ public class BaseEnemy : MonoBehaviour
             var tempDirection = new Vector2(player.GetComponent<SpriteRenderer>().flipX ? -1 : 1, 1);
 
             //敌人失血过多倒地
-            if (isChange && hitDamage != 1 && (int)(hitDamage - 1) % 8 == 0 && Random.Range(1,5) == 3)
+            if (isChange && (tempAnimatorClipName.IsName("attackNormal5") /*|| (hitDamage != 1 && (int)(hitDamage - 1) % 8 == 0 && Random.Range(1, 5) == 3)*/))
             {
                 //禁用敌人碰撞体
                 CapCollider.enabled = false;
@@ -243,6 +243,11 @@ public class BaseEnemy : MonoBehaviour
                 Invoke("cancelStatus", 3.5f);
             }
         }
+        else if (otherGameObjectName.StartsWith("Medicine") || otherGameObjectName.StartsWith("WaterBall"))
+        {
+            hit(new Vector2(-1, 1), true);
+        }
+        
     }
 
     #endregion
@@ -257,12 +262,29 @@ public class BaseEnemy : MonoBehaviour
         }
     }
 
+    //延迟死亡
+    public IEnumerator diedDelay(float time, int byAttackTypeIn = 1)
+    {
+        yield return new WaitForSeconds(time);
+
+        if (byAttackTypeIn == 2)
+        {
+            animator.SetTrigger("triggerDieKnife");
+        }
+        else
+        {
+            animator.SetTrigger("triggerDie");
+        }
+
+        dieDestroy();
+    }
+
     //死亡
     public void dieDestroy()
     {
         CapCollider.enabled = false;
         Time.timeScale = 1;
-        Destroy(gameObject, 1.2f);
+        Destroy(gameObject, 2f);
     }
 
     //死亡(禁用动画)
@@ -458,14 +480,22 @@ public class BaseEnemy : MonoBehaviour
     //扣减血量
     public void changeHitDamage(float blood = 1)
     {
+        audioSource.Stop();
         //显示血条对象
         enemyHealthObj.SetActive(true);
         //扣血
         hitDamage += blood;
-        //显示当前敌人血条
-        bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
-        //修改头像显示
-        enemyAvatar.sprite = enemyAvatarSprite;
+        if (maxBlood - hitDamage <= 0)
+        {
+            enemyHealthObj.SetActive(false);
+        }
+        else
+        {
+            //显示当前敌人血条
+            bloodBar.fillAmount = (maxBlood - hitDamage) / maxBlood;
+            //修改头像显示
+            enemyAvatar.sprite = enemyAvatarSprite;
+        }
     }
 
     public void stopHit()

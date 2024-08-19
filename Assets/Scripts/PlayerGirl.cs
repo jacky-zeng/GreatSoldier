@@ -7,6 +7,7 @@ public class PlayerGirl : PlayerBase
     private bool isCheckHitMan = true;
     private bool isDisablePlayer = false;
     private bool isTriggerManPlayerOk = false;
+    private bool isTriggerAddFire = false;
 
     #region 初始化
     private void Awake()
@@ -63,6 +64,11 @@ public class PlayerGirl : PlayerBase
             base.BaseUpdate();
         }
     }
+
+    private void FixedUpdate()
+    {
+        base.BaseFixUpdate();
+    }
     #endregion
 
     private void walk(Vector3 currentPosition, Vector3 targetPosition)
@@ -70,22 +76,28 @@ public class PlayerGirl : PlayerBase
         //朝向
         GetComponent<SpriteRenderer>().flipX = true;
 
+        base.stopAttackCircle();
+        base.stopAttackFly();
         base.stopAttack();
         base.stopAttackUp();
         base.stopJumpAttack();
 
-        animator.SetBool("isWalk", true);
+        base.isStand = false;
+        animator.SetBool("isStand", base.isStand);
+
+        base.isWalk = true;
+        animator.SetBool("isWalk", base.isWalk);
 
         // 计算移动的方向和距离
         Vector3 directionToTarget = (targetPosition - currentPosition).normalized;
-        Vector3 moveDirection = directionToTarget * (moveSpeed / 1.5f) * Time.deltaTime;
+        Vector3 moveDirection = directionToTarget * (moveSpeed / 1.2f) * Time.deltaTime;
 
         // 移动
         transform.position = Vector3.MoveTowards(currentPosition, targetPosition, moveDirection.magnitude);
 
         //走到电视机前，人物“嘿嘿2”
         //踢飞人物，电视机器关掉
-        if (Mathf.Abs(Vector3.Distance(currentPosition, targetPosition)) <= 1.5f)  //currentPosition == targetPosition 
+        if (Mathf.Abs(Vector3.Distance(currentPosition, targetPosition)) <= 1.8f)  //currentPosition == targetPosition 
         {
             //不在检查是否攻击了manPlayer
             isCheckHitMan = false;
@@ -171,22 +183,36 @@ public class PlayerGirl : PlayerBase
                 hit(true);
                 collision.gameObject.GetComponent<BasketBall>().setDie();
             }
-            else if (collision.gameObject.name.StartsWith("trigger")) // Basketball(Clone) 受到篮球攻击
+            else if (collision.gameObject.name.StartsWith("trigger"))
             {
                 if(collision.gameObject.name == "triggerManPlayer")
                 {
-                    isTriggerManPlayerOk = true;
-                    //trigger后，播放开机动画
-                    Destroy(collision.gameObject);
-                    GameObject obj = GameObject.Find("turnOnTv");
-                    obj.GetComponent<Animator>().enabled = true;
+                    if(!isTriggerManPlayerOk)
+                    {
+                        isTriggerManPlayerOk = true;
+                        //trigger后，播放开机动画
+                        Destroy(collision.gameObject);
+                        GameObject obj = GameObject.Find("turnOnTv");
+                        obj.GetComponent<Animator>().enabled = true;
 
-                    //开机声
-                    AudioClip clip = Resources.Load<AudioClip>("Audios/Show/turnOnTv");
-                    obj.GetComponent<AudioSource>().clip = clip;
-                    obj.GetComponent<AudioSource>().Play();
+                        //开机声
+                        AudioClip clip = Resources.Load<AudioClip>("Audios/Show/turnOnTv");
+                        obj.GetComponent<AudioSource>().clip = clip;
+                        obj.GetComponent<AudioSource>().Play();
 
-                    Invoke("videoBegin", 1f);
+                        Invoke("videoBegin", 1f);
+                    }
+                }
+                else if(collision.gameObject.name == "triggerFire")
+                {
+                    if(!isTriggerAddFire)
+                    {
+                        isTriggerAddFire = true;
+                        Destroy(collision.gameObject);
+                        GameManager.instance.section2_2_FireLoad();
+
+                        GameManager.instance.sectionTwoEnemyBegin(2, 12, true);
+                    }
                 }
             }
         }
@@ -268,9 +294,9 @@ public class PlayerGirl : PlayerBase
     //受到电击伤害
     public void hitElectric()
     {
-        if(!base.isHitElectric)
+        if(!base.isDisableAction)
         {
-            base.isHitElectric = true;
+            base.isDisableAction = true;
             ++base.hitDamage;
             playAudio("Audios/Tool/womanHit");
             base.setUnmatched(1.5f, true); //被电时，无敌1.5秒
@@ -318,7 +344,7 @@ public class PlayerGirl : PlayerBase
 
     private void animatorHitElectricEndEvent()
     {
-        base.isHitElectric = false;
+        base.isDisableAction = false;
     }
 
     private void die()

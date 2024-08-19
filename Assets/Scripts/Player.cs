@@ -31,6 +31,11 @@ public class Player : PlayerBase
         }
         base.BaseUpdate();
     }
+
+    private void FixedUpdate()
+    {
+        base.BaseFixUpdate();
+    }
     #endregion
 
     #region 碰撞
@@ -139,9 +144,9 @@ public class Player : PlayerBase
     //受到电击伤害
     public void hitElectric()
     {
-        if (!base.isHitElectric)
+        if (!base.isDisableAction)
         {
-            base.isHitElectric = true;
+            base.isDisableAction = true;
             ++base.hitDamage;
             playAudio("Audios/Tool/manHit1");
             base.setUnmatched(1.5f, true); //被电时，无敌1.5秒
@@ -189,7 +194,7 @@ public class Player : PlayerBase
 
     private void animatorHitElectricEndEvent()
     {
-        base.isHitElectric = false;
+        base.isDisableAction = false;
     }
 
     private void die()
